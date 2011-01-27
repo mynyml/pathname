@@ -7,8 +7,8 @@ core =
 # Helpers
 # --------------------------------------------------
 flatten = (array) ->
-  @reduce(((memo, value) => 
-    value = flatten(value) if @constructor.isArray(value)
+  array.reduce(((memo, value) =>
+    value = flatten(value) if Array.isArray(value)
     memo.concat(value)
   ), [])
 
@@ -18,7 +18,7 @@ extractCallback = (args...) ->
 
 # --------------------------------------------------
 
-# TODO rmR(), mkdirP(), open(), close(), children(), siblings(),
+# TODO rmR(), mkdirP(), children(), siblings(), absolute()
 #      chdir([block]), read() (== readFile()), write() (== writeFile()),
 #      watch(), unwatch()
 class Pathname
@@ -78,13 +78,15 @@ class Pathname
   toString: ->
     @path
 
-  tree: (args...) -> @treeSync(args...)
+  # TODO
+  tree: (args...) ->
+    @treeSync(args...)
 
   treeSync: (depth) ->
     paths = [@]
 
-    if @isDirectorySync() and (!depth? or @depth < depth)
-      core.fs.readdirSync(@path).forEach (fname) => paths.push(@join(fname).treeSync(depth))
+    if @isDirectorySync() and (!depth? or depth > 0)
+      core.fs.readdirSync(@path).forEach (fname) => paths.push(@join(fname).treeSync(depth and (depth - 1)))
 
     flatten(paths)
 

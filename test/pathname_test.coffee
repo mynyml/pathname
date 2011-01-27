@@ -4,9 +4,11 @@ core =
   path: require('path')
   util: require('util')
 
+
 global.puts    = core.sys.puts
 global.debug   = core.util.debug
 global.inspect = core.util.inspect
+global.pp      = (x) -> debug inspect x
 
 _        = require('underscore')
 assert   = require('assert')
@@ -36,6 +38,9 @@ assert.closed = (fd) ->
 assert.open = (fd) ->
   assert.doesNotThrow (-> core.fs.readSync(fd, new Buffer(1), 0, 1, 0)), Error, "fd '#{fd}' is closed, expected it to be open"
 
+assert.match = (actual, expected) ->
+  assert.ok expected.test(actual), "Expected #{expected} to match #{actual}"
+
 assert.__defineGetter__ 'defered', ->
   proxy = {}
   delete @.defered
@@ -45,6 +50,10 @@ assert.__defineGetter__ 'defered', ->
   @.__defineGetter__('defered', arguments.callee)
   proxy
 
+# source: http://efreedom.com/Question/1-3561493/RegExpescape-Function-Javascript
+# author: bobince
+RegExp.escape = (exp) ->
+  exp.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
 
 # --------------------------------------------------
 # Tests
@@ -327,62 +336,74 @@ with_tmpfile (path, fd) ->
     assert.equal buffer.toString(), 'foo'
     assert.defered.closed(_fd)
 
-###
-
-
-
 
 ## test traverses directory tree recursively
 try
-  root = new Pathname(temp.path()).mkdirSync()
-  root.join('bar'        ).touchSync()
-  root.join('baz'        ).touchSync()
-  root.join('boo'        ).mkdirSync()
-  root.join('boo/moo'    ).touchSync()
-  root.join('boo/zoo'    ).mkdirSync()
-  root.join('boo/zoo/aaa').touchSync()
-  root.join('boo/zoo/bbb').touchSync()
+  root = null
+  with_tmpdir (path) ->
+    root = new Pathname(path)
+    root.join('bar'        ).touchSync()
+    root.join('boo'        ).mkdirSync()
+    root.join('boo/moo'    ).mkdirSync()
+    root.join('boo/moo/zoo').touchSync()
 
-  assert.ok root.treeSync().every (path) -> path.constructor == Pathname
+    assert.ok root.treeSync().every (path) -> path.constructor == Pathname
 
-  tree = root.treeSync(root.depth)
-  assert.equal   tree.length, 1
-  assert.include tree, root
+    tree = root.treeSync(0)
+    assert.equal   tree.length, 1
+    assert.include tree, root
 
-  assert.equal root.treeSync(root.depth - 1).length, tree.length
+    assert.equal root.treeSync(-1).length, tree.length
 
-  tree = root.treeSync(root.depth + 1)
-  assert.equal   tree.length, 4
-  assert.include tree, root
-  assert.include tree, root.join('bar')
-  assert.include tree, root.join('baz')
-  assert.include tree, root.join('boo')
+    tree = root.treeSync(1)
+    assert.equal   tree.length, 3
+    assert.include tree, root
+    assert.include tree, root.join('bar')
+    assert.include tree, root.join('boo')
 
-  tree = root.treeSync(root.depth + 2)
-  assert.equal   tree.length, 6
-  assert.include tree, root
-  assert.include tree, root.join('bar')
-  assert.include tree, root.join('baz')
-  assert.include tree, root.join('boo')
-  assert.include tree, root.join('boo/moo')
-  assert.include tree, root.join('boo/zoo')
+    tree = root.treeSync(2)
+    assert.equal   tree.length, 4
+    assert.include tree, root
+    assert.include tree, root.join('bar')
+    assert.include tree, root.join('boo')
+    assert.include tree, root.join('boo/moo')
 
-  tree = root.tree(root.depth + 3)
-  assert.equal   tree.length, 8
-  assert.include tree, root
-  assert.include tree, root.join('bar')
-  assert.include tree, root.join('baz')
-  assert.include tree, root.join('boo')
-  assert.include tree, root.join('boo/moo')
-  assert.include tree, root.join('boo/zoo')
-  assert.include tree, root.join('boo/zoo/aaa')
-  assert.include tree, root.join('boo/zoo/bbb')
+    tree = root.treeSync(3)
+    assert.equal   tree.length, 5
+    assert.include tree, root
+    assert.include tree, root.join('bar')
+    assert.include tree, root.join('boo')
+    assert.include tree, root.join('boo/moo')
+    assert.include tree, root.join('boo/moo/zoo')
 
-  assert.equal root.treeSync(undefined).length, tree.length
-  assert.equal root.treeSync(null     ).length, tree.length
+    assert.equal root.treeSync(undefined).length, tree.length
+    assert.equal root.treeSync(null     ).length, tree.length
 finally
-  core.fs.rmdirSync(root.toString()) if root?
- 
+  if root?
+    root.join('boo/moo/zoo').unlinkSync()
+    root.join('boo/moo'    ).rmdirSync()
+    root.join('boo'        ).rmdirSync()
+    root.join('bar'        ).unlinkSync()
+
+
+###
+
+## deletes directory tree
+with_tmpdir (path) ->
+  root = new Pathname(path)
+  root.join('boo'        ).mkdirSync()
+  root.join('boo/moo'    ).mkdirSync()
+  root.join('boo/moo/zoo').touchSync()
+
+  # make sure root is a tmp dir
+  regexp = new RegExp("^#{RegExp.escape(temp.dir)}")
+  assert.match root.absoluteSync().toString(), regexp
+
+  # root.rmRSync()
+
+  # assert.equal root.join('boo').existsSync(), false
+
+
 
 ###
 
