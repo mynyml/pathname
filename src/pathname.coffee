@@ -18,9 +18,9 @@ extractCallback = (args...) ->
 
 # --------------------------------------------------
 
-# TODO rmR(), mkdirP(), children(), siblings(), absolute()
+# TODO mkdirP(), children(), siblings(), absolute()
 #      chdir([block]), read() (== readFile()), write() (== writeFile()),
-#      watch(), unwatch()
+#      watch(), unwatch(), link()
 class Pathname
 
   @normalize: (path) ->
@@ -126,6 +126,12 @@ class Pathname
 
   rmSync: ->
     @unlinkSync()
+
+  rmRSync: ->
+    @treeSync().reverse().forEach (path) ->
+      # if path.isFileSync() or path.isSymbolicSync() then path.unlinkSync()
+      if path.isFileSync() then path.unlinkSync()
+      if path.isDirectorySync()                     then path.rmdirSync()
 
   open: (flags, mode, cb) ->
     [cb, flags, mode] = extractCallback(flags, mode, cb)

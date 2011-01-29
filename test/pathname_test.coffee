@@ -18,15 +18,15 @@ Pathname = require('../src/index')
 # --------------------------------------------------
 # Helpers
 # --------------------------------------------------
-with_tmpdir = (callback) ->
+with_tmpdir = (cb) ->
   temp.mkdir "Pathname-", (err, dirPath) ->
     assert.ifError(err)
-    callback(dirPath)
+    cb(dirPath)
 
-with_tmpfile = (callback) ->
+with_tmpfile = (cb) ->
   temp.open "Pathname-", (err, info) ->
     assert.ifError(err)
-    callback(info.path, info.fd)
+    cb(info.path, info.fd)
 
 assert.include = (enumerable, value, message) ->
   message ?= "Expected '#{inspect(enumerable)}' to include '#{inspect(value)}'"
@@ -338,9 +338,8 @@ with_tmpfile (path, fd) ->
 
 
 ## test traverses directory tree recursively
-try
-  root = null
-  with_tmpdir (path) ->
+with_tmpdir (path) ->
+  try
     root = new Pathname(path)
     root.join('bar'        ).touchSync()
     root.join('boo'        ).mkdirSync()
@@ -378,30 +377,36 @@ try
 
     assert.equal root.treeSync(undefined).length, tree.length
     assert.equal root.treeSync(null     ).length, tree.length
-finally
-  if root?
-    root.join('boo/moo/zoo').unlinkSync()
-    root.join('boo/moo'    ).rmdirSync()
-    root.join('boo'        ).rmdirSync()
-    root.join('bar'        ).unlinkSync()
+  finally
+    if root?
+      root.join('boo/moo/zoo').unlinkSync()
+      root.join('boo/moo'    ).rmdirSync()
+      root.join('boo'        ).rmdirSync()
+      root.join('bar'        ).unlinkSync()
 
-
-###
 
 ## deletes directory tree
 with_tmpdir (path) ->
-  root = new Pathname(path)
-  root.join('boo'        ).mkdirSync()
-  root.join('boo/moo'    ).mkdirSync()
-  root.join('boo/moo/zoo').touchSync()
+  try
+    root = new Pathname(path)
+    root.join('bar'        ).touchSync()
+    root.join('boo'        ).mkdirSync()
+    root.join('boo/moo'    ).mkdirSync()
+    root.join('boo/moo/zoo').touchSync()
 
-  # make sure root is a tmp dir
-  regexp = new RegExp("^#{RegExp.escape(temp.dir)}")
-  assert.match root.absoluteSync().toString(), regexp
+    # make sure root is a tmp dir
+    regexp = new RegExp("^#{RegExp.escape(temp.dir)}")
+    assert.match root.absoluteSync().toString(), regexp
 
-  # root.rmRSync()
+    root.rmRSync()
 
-  # assert.equal root.join('boo').existsSync(), false
+    assert.equal root.join('boo').existsSync(), false
+  finally
+    if root?.existsSync()
+      root.join('boo/moo/zoo').unlinkSync()
+      root.join('boo/moo'    ).rmdirSync()
+      root.join('boo'        ).rmdirSync()
+      root.join('bar'        ).unlinkSync()
 
 
 
