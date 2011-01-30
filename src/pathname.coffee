@@ -21,11 +21,8 @@ extractCallback = (args...) ->
 # TODO return @ when possible
 class Pathname
 
-  @normalize: (path) ->
-    core.path.normalize(path).replace(/\/$/,'')
-
   constructor: (path) ->
-    @path = @constructor.normalize(core.path.normalize(path))
+    @path = core.path.normalize(path).replace(/\/$/,'')
 
   # --------------------------------------------------
   # path functions
