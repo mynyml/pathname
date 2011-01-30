@@ -127,7 +127,7 @@ with_tmpdir (path) ->
   try
     process.chdir(path)
     base =           new Pathname(path).basename()
-    assert.deepEqual new Pathname(base).absoluteSync(), new Pathname(path)
+    assert.deepEqual new Pathname(base).realpathSync(), new Pathname(path)
   catch e
     puts inspect("Expection: #{e}")
   finally
@@ -383,7 +383,7 @@ with_tmpdir (path) ->
 
     # make sure root is a tmp dir
     regexp = new RegExp("^#{RegExp.escape(temp.dir)}")
-    assert.match root.absoluteSync().toString(), regexp
+    assert.match root.realpathSync().toString(), regexp
 
     root.rmRSync()
 

@@ -67,7 +67,7 @@ class Pathname
     core.fs.statSync(@path)
 
   # TODO rename to realpath
-  absoluteSync: ->
+  realpathSync: ->
     new @constructor(core.fs.realpathSync(@path))
 
   # TODO unify
