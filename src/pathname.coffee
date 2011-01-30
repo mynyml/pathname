@@ -18,33 +18,36 @@ extractCallback = (args...) ->
 
 # --------------------------------------------------
 
-# TODO mkdirP(), children(), siblings(), absolute()
-#      chdir([block]), read() (== readFile()), write() (== writeFile()),
-#      watch(), unwatch(), link()
+# TODO return @ when possible
 class Pathname
 
   @normalize: (path) ->
     core.path.normalize(path).replace(/\/$/,'')
 
   constructor: (path) ->
-    @path  = @constructor.normalize(core.path.normalize(path))
-    @depth = @path.split('/').length
+    @path = @constructor.normalize(core.path.normalize(path))
 
-  parent: ->
-    new @constructor(@dirname())
+  # --------------------------------------------------
+  # path functions
+  # --------------------------------------------------
 
+  # FIXME
+  join: (path) ->
+    new @constructor(core.path.join(@path, path))
+
+  # FIXME
   dirname: ->
     @path.split('/').slice(0, -1).join('/')
 
+  # FIXME
   basename: ->
     @path.split('/').slice(-1)
 
+  # FIXME
   extname: ->
     if /\./.test(@path) then @path.split('.').slice(-1) else null
 
-  absoluteSync: ->
-    new @constructor(core.fs.realpathSync(@path))
-
+  # TODO unify
   exists: (cb) ->
     core.path.exists(@path, cb)
 
@@ -52,44 +55,43 @@ class Pathname
     try core.fs.statSync(@path); true
     catch e then                 false
 
-  join: (path) ->
-    new @constructor(core.path.join(@path, path))
+  # --------------------------------------------------
+  # fs functions
+  # --------------------------------------------------
 
+  # TODO unify
   stat: (cb) ->
     core.fs.stat(@path, cb)
 
   statSync: ->
     core.fs.statSync(@path)
 
-  isFile: (cb) ->
-    @exists (exists) =>
-      exists and @stat (err, stats) -> cb(err, stats.isFile())
+  # TODO rename to realpath
+  absoluteSync: ->
+    new @constructor(core.fs.realpathSync(@path))
 
-  isFileSync: ->
-    @existsSync() and @statSync().isFile()
+  # TODO unify
+  unlink: (cb) ->
+    core.fs.unlink(@path, cb)
 
-  isDirectory: (cb) ->
-    @exists (exists) =>
-      exists and @stat (err, stats) -> cb(err, stats.isDirectory())
+  unlinkSync: ->
+    core.fs.unlinkSync(@path)
 
-  isDirectorySync: ->
-    @existsSync() and @statSync().isDirectory()
+  # TODO remove aliases
+  rm: (cb) ->
+    @unlink(cb)
 
-  toString: ->
-    @path
+  rmSync: ->
+    @unlinkSync()
 
-  # TODO
-  tree: (args...) ->
-    @treeSync(args...)
+  # TODO unify
+  rmdir: (cb) ->
+    core.fs.rmdir(@path, cb)
 
-  treeSync: (depth) ->
-    paths = [@]
+  rmdirSync: ->
+    core.fs.rmdirSync(@path)
 
-    if @isDirectorySync() and (!depth? or depth > 0)
-      core.fs.readdirSync(@path).forEach (fname) => paths.push(@join(fname).treeSync(depth and (depth - 1)))
-
-    flatten(paths)
-
+  # TODO unify
   mkdir: (mode, cb) ->
     [cb, mode] = [mode, undefined] if mode?.constructor is Function
     core.fs.mkdir @path, mode ? 0700, (err) => cb(err, @)
@@ -98,41 +100,7 @@ class Pathname
     core.fs.mkdirSync(@path, mode)
     @
 
-  touch: (cb) ->
-    core.fs.open @path, 'w+', undefined, (err, fd) =>
-      cb(err) if err?
-      core.fs.close fd, (err) =>
-        cb(err) if err?
-        cb(null, @)
-
-  touchSync: ->
-    core.fs.closeSync(core.fs.openSync(@path, 'w+'))
-    @
-
-  rmdir: (cb) ->
-    core.fs.rmdir(@path, cb)
-
-  rmdirSync: ->
-    core.fs.rmdirSync(@path)
-
-  unlink: (cb) ->
-    core.fs.unlink(@path, cb)
-
-  unlinkSync: ->
-    core.fs.unlinkSync(@path)
-
-  rm: (cb) ->
-    @unlink(cb)
-
-  rmSync: ->
-    @unlinkSync()
-
-  rmRSync: ->
-    @treeSync().reverse().forEach (path) ->
-      # if path.isFileSync() or path.isSymbolicSync() then path.unlinkSync()
-      if path.isFileSync() then path.unlinkSync()
-      if path.isDirectorySync()                     then path.rmdirSync()
-
+  # TODO unify
   open: (flags, mode, cb) ->
     [cb, flags, mode] = extractCallback(flags, mode, cb)
 
@@ -151,6 +119,92 @@ class Pathname
     finally
       core.fs.closeSync(fd)
 
+  # TODO
+  # rename
+  # truncate
+  # chmod
+  # lstat
+  # link
+  # symlink
+  # readlink
+  # close
+  # read    (use readFile)
+  # write   (use writeFile)
+  # watch
+  # unwatch
+
+  # --------------------------------------------------
+  # fs.Stats functions
+  # --------------------------------------------------
+
+  # TODO unify
+  isFile: (cb) ->
+    @exists (exists) =>
+      exists and @stat (err, stats) -> cb(err, stats.isFile())
+
+  isFileSync: ->
+    @existsSync() and @statSync().isFile()
+
+  # TODO unify
+  isDirectory: (cb) ->
+    @exists (exists) =>
+      exists and @stat (err, stats) -> cb(err, stats.isDirectory())
+
+  isDirectorySync: ->
+    @existsSync() and @statSync().isDirectory()
+
+  # TODO
+  # isBlockDevice
+  # isCharacterDevice
+  # isSymbolicLink
+  # isFIFO
+  # isSocket
+
+  # --------------------------------------------------
+  # pathname functions
+  # --------------------------------------------------
+
+  toString: ->
+    @path
+
+  parent: ->
+    new @constructor(@dirname())
+
+  # TODO unify
+  touch: (cb) ->
+    core.fs.open @path, 'w+', undefined, (err, fd) =>
+      cb(err) if err?
+      core.fs.close fd, (err) =>
+        cb(err) if err?
+        cb(null, @)
+
+  touchSync: ->
+    core.fs.closeSync(core.fs.openSync(@path, 'w+'))
+    @
+
+  # TODO async version
+  treeSync: (depth) ->
+    paths = [@]
+
+    if @isDirectorySync() and (!depth? or depth > 0)
+      core.fs.readdirSync(@path).forEach (fname) => paths.push(@join(fname).treeSync(depth and (depth - 1)))
+
+    flatten(paths)
+
+  # TODO account for symlinks
+  rmRSync: ->
+    @treeSync().reverse().forEach (path) ->
+      # if path.isFileSync() or path.isSymbolicSync() then path.unlinkSync()
+      if path.isFileSync() then path.unlinkSync()
+      if path.isDirectorySync()                     then path.rmdirSync()
+
+  # TODO
+  # tree    (async)
+  # rmR     (async)
+  # mkdirP
+  # children
+  # siblings
+  # chdir
 
 module.exports = Pathname
 

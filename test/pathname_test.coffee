@@ -8,7 +8,7 @@ core =
 global.puts    = core.sys.puts
 global.debug   = core.util.debug
 global.inspect = core.util.inspect
-global.pp      = (x) -> debug inspect x
+global.d       = (x) -> debug inspect x
 
 _        = require('underscore')
 assert   = require('assert')
@@ -63,9 +63,16 @@ RegExp.escape = (exp) ->
 assert.equal new Pathname('/tmp/foo').toString(), '/tmp/foo'
 
 
-## test path depth
-assert.equal new Pathname('/tmp'        ).depth, 2
-assert.equal new Pathname('/tmp/foo/bar').depth, 4
+## test normalizes path on creation
+assert.equal new Pathname('/tmp/foo/'       ).toString(), '/tmp/foo'
+assert.equal new Pathname('/tmp/foo/bar/../').toString(), '/tmp/foo'
+
+
+## test joining paths
+assert.equal new Pathname("/tmp/foo").join("bar").constructor, Pathname
+assert.equal new Pathname("/tmp/foo").join("bar").toString(),  "/tmp/foo/bar"
+assert.equal new Pathname("/tmp/foo").join("/bar").toString(), "/tmp/foo/bar"
+assert.equal new Pathname("/tmp/foo").join("bar/").toString(), "/tmp/foo/bar"
 
 
 ## test extracts basename
@@ -82,24 +89,6 @@ assert.equal new Pathname('/tmp/foo/bar'    ).dirname(), '/tmp/foo'
 assert.equal new Pathname('/tmp/foo'        ).extname(), null
 assert.equal new Pathname('/tmp/foo.ext'    ).extname(), 'ext'
 assert.equal new Pathname('/tmp/foo.txt.ext').extname(), 'ext'
-
-
-## test finds parent directory
-assert.deepEqual new Pathname('/tmp/foo/bar.txt').parent(), new Pathname('/tmp/foo')
-assert.deepEqual new Pathname('/tmp/foo/bar'    ).parent(), new Pathname('/tmp/foo')
-
-
-# test expands path
-with_tmpdir (path) ->
-  cwd = process.cwd()
-  try
-    process.chdir(path)
-    base =           new Pathname(path).basename()
-    assert.deepEqual new Pathname(base).absoluteSync(), new Pathname(path)
-  catch e
-    puts inspect("Expection: #{e}")
-  finally
-    process.chdir(cwd)
 
 
 ## test knows dir exists
@@ -122,61 +111,6 @@ with_tmpfile (path) ->
 assert.ok not new Pathname(temp.path()).existsSync()
 
 
-## test joining paths
-assert.equal new Pathname("/tmp/foo").join("bar").constructor, Pathname
-assert.equal new Pathname("/tmp/foo").join("bar").toString(),  "/tmp/foo/bar"
-assert.equal new Pathname("/tmp/foo").join("/bar").toString(), "/tmp/foo/bar"
-assert.equal new Pathname("/tmp/foo").join("bar/").toString(), "/tmp/foo/bar"
-
-
-## test knows path is a dir
-with_tmpdir (path) ->
-  assert.ok new Pathname(path).isDirectorySync()
-
-with_tmpfile (path) ->
-  assert.ok not new Pathname(path).isDirectorySync()
-
-assert.ok not new Pathname(temp.path()).isDirectorySync()
-
-with_tmpdir (path) ->
-  new Pathname(path).isDirectory (err, isDirectory) ->
-    assert.ifError(err)
-    assert.ok isDirectory
-
-with_tmpfile (path) ->
-  new Pathname(path).isDirectory (err, isDirectory) ->
-    assert.ifError(err)
-    assert.ok not isDirectory
-
-new Pathname(temp.path()).isDirectory (err, isDirectory) ->
-  assert.ifError(err)
-  assert.ok not isDirectory
-
-
-## test knows path is a file
-with_tmpfile (path) ->
-  assert.ok new Pathname(path).isFileSync()
-
-with_tmpdir (path) ->
-  assert.ok not new Pathname(path).isFileSync()
-
-assert.ok not new Pathname(temp.path()).isFileSync()
-
-with_tmpfile (path) ->
-  new Pathname(path).isFile (err, isFile) ->
-    assert.ifError err
-    assert.ok isFile
-
-with_tmpdir (path) ->
-  new Pathname(path).isFile (err, isFile) ->
-    assert.ifError(err)
-    assert.ok not isFile
-
-new Pathname(temp.path()).isFile (err, isFile) ->
-  assert.ifError(err)
-  assert.ok not isFile
-
-
 ## test queries stats
 with_tmpdir (path) ->
   assert.equal new Pathname(path).statSync().ino, core.fs.statSync(path).ino
@@ -187,63 +121,17 @@ with_tmpdir (path) ->
     assert.equal info.ino, core.fs.statSync(path).ino
 
 
-## test creates directory
-try
-  path = new Pathname(temp.path()).mkdirSync()
-  assert.ok path.existsSync()
-  assert.ok path.isDirectorySync()
-  # assert.equal path.statSync().mode, 0700 #TODO
-finally
-  core.fs.rmdirSync(path.toString()) if path?
-
-new Pathname(temp.path()).mkdir undefined, (err, path) ->
-  try
-    assert.ifError err
-    assert.ok path.existsSync()
-    assert.ok path.isDirectorySync()
-    # assert.equal path.statSync().mode, 0700 #TODO
-  finally
-    core.fs.rmdirSync(path.toString()) if path?
-
-new Pathname(temp.path()).mkdir (err, path) ->
-  try
-    assert.ifError err
-    assert.ok path.existsSync()
-    assert.ok path.isDirectorySync()
-    # assert.equal path.statSync().mode, 0700 #TODO
-  finally
-    core.fs.rmdirSync(path.toString()) if path?
-
-
-## test creates file
-try
-  path = new Pathname(temp.path()).touchSync()
-  assert.ok path.existsSync()
-  assert.ok path.isFileSync()
-finally
-  core.fs.unlinkSync(path.toString()) if path?
-
-new Pathname(temp.path()).touch (err, path) ->
-  try
-    assert.ok path.existsSync()
-    assert.ok path.isFileSync()
-  finally
-    core.fs.unlinkSync(path.toString()) if path?
-
-
-## test removes empty directory
+# test expands path
 with_tmpdir (path) ->
-  path = new Pathname(path)
-  path.rmdir (err) ->
-    assert.ifError(err)
-    assert.ok not path.existsSync()
-    assert.ok not path.isDirectorySync()
-
-with_tmpdir (path) ->
-  path = new Pathname(path)
-  path.rmdirSync()
-  assert.ok not path.existsSync()
-  assert.ok not path.isDirectorySync()
+  cwd = process.cwd()
+  try
+    process.chdir(path)
+    base =           new Pathname(path).basename()
+    assert.deepEqual new Pathname(base).absoluteSync(), new Pathname(path)
+  catch e
+    puts inspect("Expection: #{e}")
+  finally
+    process.chdir(cwd)
 
 
 ## test removes a file
@@ -272,6 +160,49 @@ with_tmpfile (path) ->
   path.rmSync()
   assert.ok not path.existsSync()
   assert.ok not path.isFileSync()
+
+
+## test removes empty directory
+with_tmpdir (path) ->
+  path = new Pathname(path)
+  path.rmdir (err) ->
+    assert.ifError(err)
+    assert.ok not path.existsSync()
+    assert.ok not path.isDirectorySync()
+
+with_tmpdir (path) ->
+  path = new Pathname(path)
+  path.rmdirSync()
+  assert.ok not path.existsSync()
+  assert.ok not path.isDirectorySync()
+
+
+## test creates directory
+try
+  path = new Pathname(temp.path()).mkdirSync()
+  assert.ok path.existsSync()
+  assert.ok path.isDirectorySync()
+  # assert.equal path.statSync().mode, 0700 #TODO
+finally
+  core.fs.rmdirSync(path.toString()) if path?
+
+new Pathname(temp.path()).mkdir undefined, (err, path) ->
+  try
+    assert.ifError err
+    assert.ok path.existsSync()
+    assert.ok path.isDirectorySync()
+    # assert.equal path.statSync().mode, 0700 #TODO
+  finally
+    core.fs.rmdirSync(path.toString()) if path?
+
+new Pathname(temp.path()).mkdir (err, path) ->
+  try
+    assert.ifError err
+    assert.ok path.existsSync()
+    assert.ok path.isDirectorySync()
+    # assert.equal path.statSync().mode, 0700 #TODO
+  finally
+    core.fs.rmdirSync(path.toString()) if path?
 
 
 ## test opens file (sync)
@@ -335,6 +266,75 @@ with_tmpfile (path, fd) ->
     core.fs.readSync(_fd, buffer, 0, 3, 0)
     assert.equal buffer.toString(), 'foo'
     assert.defered.closed(_fd)
+
+
+## test knows path is a file
+with_tmpfile (path) ->
+  assert.ok new Pathname(path).isFileSync()
+
+with_tmpdir (path) ->
+  assert.ok not new Pathname(path).isFileSync()
+
+assert.ok not new Pathname(temp.path()).isFileSync()
+
+with_tmpfile (path) ->
+  new Pathname(path).isFile (err, isFile) ->
+    assert.ifError err
+    assert.ok isFile
+
+with_tmpdir (path) ->
+  new Pathname(path).isFile (err, isFile) ->
+    assert.ifError(err)
+    assert.ok not isFile
+
+new Pathname(temp.path()).isFile (err, isFile) ->
+  assert.ifError(err)
+  assert.ok not isFile
+
+
+## test knows path is a dir
+with_tmpdir (path) ->
+  assert.ok new Pathname(path).isDirectorySync()
+
+with_tmpfile (path) ->
+  assert.ok not new Pathname(path).isDirectorySync()
+
+assert.ok not new Pathname(temp.path()).isDirectorySync()
+
+with_tmpdir (path) ->
+  new Pathname(path).isDirectory (err, isDirectory) ->
+    assert.ifError(err)
+    assert.ok isDirectory
+
+with_tmpfile (path) ->
+  new Pathname(path).isDirectory (err, isDirectory) ->
+    assert.ifError(err)
+    assert.ok not isDirectory
+
+new Pathname(temp.path()).isDirectory (err, isDirectory) ->
+  assert.ifError(err)
+  assert.ok not isDirectory
+
+
+## test finds parent directory
+assert.deepEqual new Pathname('/tmp/foo/bar.txt').parent(), new Pathname('/tmp/foo')
+assert.deepEqual new Pathname('/tmp/foo/bar'    ).parent(), new Pathname('/tmp/foo')
+
+
+## test creates file
+try
+  path = new Pathname(temp.path()).touchSync()
+  assert.ok path.existsSync()
+  assert.ok path.isFileSync()
+finally
+  core.fs.unlinkSync(path.toString()) if path?
+
+new Pathname(temp.path()).touch (err, path) ->
+  try
+    assert.ok path.existsSync()
+    assert.ok path.isFileSync()
+  finally
+    core.fs.unlinkSync(path.toString()) if path?
 
 
 ## test traverses directory tree recursively
@@ -407,7 +407,6 @@ with_tmpdir (path) ->
       root.join('boo/moo'    ).rmdirSync()
       root.join('boo'        ).rmdirSync()
       root.join('bar'        ).unlinkSync()
-
 
 
 ###
