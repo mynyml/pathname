@@ -34,17 +34,14 @@ class Pathname
   join: (paths...) ->
     new @constructor(core.path.join(@path, paths...))
 
-  # FIXME
   dirname: ->
-    @path.split('/').slice(0, -1).join('/')
+    core.path.dirname(@path)
 
-  # FIXME
-  basename: ->
-    @path.split('/').slice(-1)
+  basename: (ext) ->
+    core.path.basename(@path, ext)
 
-  # FIXME
   extname: ->
-    if /\./.test(@path) then @path.split('.').slice(-1) else null
+    core.path.extname(@path)
 
   # TODO unify
   exists: (cb) ->
