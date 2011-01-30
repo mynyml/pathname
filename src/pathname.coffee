@@ -77,13 +77,6 @@ class Pathname
   unlinkSync: ->
     core.fs.unlinkSync(@path)
 
-  # TODO remove aliases
-  rm: (cb) ->
-    @unlink(cb)
-
-  rmSync: ->
-    @unlinkSync()
-
   # TODO unify
   rmdir: (cb) ->
     core.fs.rmdir(@path, cb)
@@ -191,6 +184,7 @@ class Pathname
 
     flatten(paths)
 
+  # TODO async version
   # TODO account for symlinks
   rmRSync: ->
     @treeSync().reverse().forEach (path) ->

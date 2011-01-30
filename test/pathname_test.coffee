@@ -148,19 +148,6 @@ with_tmpfile (path) ->
   assert.ok not path.existsSync()
   assert.ok not path.isFileSync()
 
-with_tmpfile (path) ->
-  path = new Pathname(path)
-  path.rm (err) ->
-    assert.ifError(err)
-    assert.ok not path.existsSync()
-    assert.ok not path.isFileSync()
-
-with_tmpfile (path) ->
-  path = new Pathname(path)
-  path.rmSync()
-  assert.ok not path.existsSync()
-  assert.ok not path.isFileSync()
-
 
 ## test removes empty directory
 with_tmpdir (path) ->
