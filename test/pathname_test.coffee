@@ -69,10 +69,12 @@ assert.equal new Pathname('/tmp/foo/bar/../').toString(), '/tmp/foo'
 
 
 ## test joining paths
-assert.equal new Pathname("/tmp/foo").join("bar").constructor, Pathname
-assert.equal new Pathname("/tmp/foo").join("bar").toString(),  "/tmp/foo/bar"
-assert.equal new Pathname("/tmp/foo").join("/bar").toString(), "/tmp/foo/bar"
-assert.equal new Pathname("/tmp/foo").join("bar/").toString(), "/tmp/foo/bar"
+assert.equal new Pathname("/tmp/foo" ).join("bar" ).constructor, Pathname
+assert.equal new Pathname("/tmp/foo" ).join("bar" ).toString(), "/tmp/foo/bar"
+assert.equal new Pathname("/tmp/foo" ).join("bar/").toString(), "/tmp/foo/bar"
+assert.equal new Pathname("/tmp/foo" ).join("/bar").toString(), "/tmp/foo/bar"
+assert.equal new Pathname("/tmp/foo/").join("/bar").toString(), "/tmp/foo/bar"
+assert.equal new Pathname("/tmp/foo/").join("bar", "baz").toString(), "/tmp/foo/bar/baz"
 
 
 ## test extracts basename

@@ -31,9 +31,8 @@ class Pathname
   # path functions
   # --------------------------------------------------
 
-  # FIXME
-  join: (path) ->
-    new @constructor(core.path.join(@path, path))
+  join: (paths...) ->
+    new @constructor(core.path.join(@path, paths...))
 
   # FIXME
   dirname: ->
@@ -189,8 +188,8 @@ class Pathname
   rmRSync: ->
     @treeSync().reverse().forEach (path) ->
       # if path.isFileSync() or path.isSymbolicSync() then path.unlinkSync()
-      if path.isFileSync() then path.unlinkSync()
-      if path.isDirectorySync()                     then path.rmdirSync()
+      if path.isFileSync()      then path.unlinkSync()
+      if path.isDirectorySync() then path.rmdirSync()
 
   # TODO
   # tree    (async)
@@ -199,6 +198,7 @@ class Pathname
   # children
   # siblings
   # chdir
+  # relativeFrom
 
 module.exports = Pathname
 
