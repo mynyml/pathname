@@ -14,7 +14,7 @@ flatten = (array) ->
 
 extractCallback = (args...) ->
   i = k for v,k in args when v?.constructor is Function
-  [args[i] or (->), args[0...i]...]
+  [args[i], args[0...i]...]
 
 # --------------------------------------------------
 
@@ -40,13 +40,12 @@ class Pathname
   extname: ->
     core.path.extname(@path)
 
-  # TODO unify
   exists: (cb) ->
-    core.path.exists(@path, cb)
-
-  existsSync: ->
-    try @stat(@path); true
-    catch e then      false
+    if cb?
+      core.path.exists(@path, cb)
+    else
+      try @stat(@path); true
+      catch e then      false
 
   # --------------------------------------------------
   # fs functions
@@ -68,38 +67,31 @@ class Pathname
       core.fs.unlinkSync(@path)
 
   rmdir: (cb) ->
-    core.fs.rmdir(@path, cb)
+    if cb?
+      core.fs.rmdir(@path, cb)
+    else
+      core.fs.rmdirSync(@path)
 
-  rmdirSync: ->
-    core.fs.rmdirSync(@path)
-
-  # TODO unify
   mkdir: (mode, cb) ->
     [cb, mode] = [mode, undefined] if mode?.constructor is Function
-    core.fs.mkdir @path, mode ? 0700, (err) => cb(err, @)
+    mode ?= 0700
+    if cb?
+      core.fs.mkdir @path, mode, (err) => cb(err, @)
+    else
+      core.fs.mkdirSync(@path, mode)
+      @
 
-  mkdirSync: (mode = 0700) ->
-    core.fs.mkdirSync(@path, mode)
-    @
-
-  # TODO unify
   open: (flags, mode, cb) ->
     [cb, flags, mode] = extractCallback(flags, mode, cb)
 
-    fd = core.fs.open @path, flags or 'r+', mode, (err, fd) ->
-      try
-        cb(err, fd)
-      finally
-        core.fs.closeSync(fd)
-
-  openSync: (flags, mode, cb) ->
-    [cb, flags, mode] = extractCallback(flags, mode, cb)
-
-    fd = core.fs.openSync(@path, flags or 'r+', mode)
-    try
-      cb(fd)
-    finally
-      core.fs.closeSync(fd)
+    if cb?
+      fd = core.fs.open @path, flags, mode, (err, fd) ->
+        try
+          cb(err, fd)
+        finally
+          core.fs.closeSync(fd)
+    else
+      core.fs.openSync(@path, flags, mode)
 
   # TODO
   # rename
@@ -125,7 +117,7 @@ class Pathname
       exists and @stat (err, stats) -> cb(err, stats.isFile())
 
   isFileSync: ->
-    @existsSync() and @stat().isFile()
+    @exists() and @stat().isFile()
 
   # TODO unify
   isDirectory: (cb) ->
@@ -133,7 +125,7 @@ class Pathname
       exists and @stat (err, stats) -> cb(err, stats.isDirectory())
 
   isDirectorySync: ->
-    @existsSync() and @stat().isDirectory()
+    @exists() and @stat().isDirectory()
 
   # TODO
   # isBlockDevice
@@ -178,8 +170,8 @@ class Pathname
   rmRSync: ->
     @treeSync().reverse().forEach (path) ->
       # if path.isFileSync() or path.isSymbolicSync() then path.unlinkSync()
-      if path.isFileSync()      then path.unlinkSync()
-      if path.isDirectorySync() then path.rmdirSync()
+      if path.isFileSync()      then path.unlink()
+      if path.isDirectorySync() then path.rmdir()
 
   # TODO
   # tree    (async)

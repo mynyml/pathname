@@ -95,7 +95,7 @@ assert.equal new Pathname('/tmp/foo.txt.ext').extname(), '.ext'
 
 ## test knows dir exists
 with_tmpdir (path) ->
-  assert.ok new Pathname(path).existsSync()
+  assert.ok new Pathname(path).exists()
 
 with_tmpdir (path) ->
   new Pathname(path).exists (exists) -> assert.ok(exists)
@@ -103,14 +103,14 @@ with_tmpdir (path) ->
 
 ## test knows file exists
 with_tmpfile (path) ->
-  assert.ok new Pathname(path).existsSync()
+  assert.ok new Pathname(path).exists()
 
 with_tmpfile (path) ->
   new Pathname(path).exists (exists) -> assert.ok(exists)
 
 
 ## test knows path doesn't exist
-assert.ok not new Pathname(temp.path()).existsSync()
+assert.ok not new Pathname(temp.path()).exists()
 
 
 ## test queries stats
@@ -142,13 +142,13 @@ with_tmpfile (path) ->
   path = new Pathname(path)
   path.unlink (err) ->
     assert.ifError(err)
-    assert.ok not path.existsSync()
+    assert.ok not path.exists()
     assert.ok not path.isFileSync()
 
 with_tmpfile (path) ->
   path = new Pathname(path)
   path.unlink()
-  assert.ok not path.existsSync()
+  assert.ok not path.exists()
   assert.ok not path.isFileSync()
 
 
@@ -157,20 +157,20 @@ with_tmpdir (path) ->
   path = new Pathname(path)
   path.rmdir (err) ->
     assert.ifError(err)
-    assert.ok not path.existsSync()
+    assert.ok not path.exists()
     assert.ok not path.isDirectorySync()
 
 with_tmpdir (path) ->
   path = new Pathname(path)
-  path.rmdirSync()
-  assert.ok not path.existsSync()
+  path.rmdir()
+  assert.ok not path.exists()
   assert.ok not path.isDirectorySync()
 
 
 ## test creates directory
 try
-  path = new Pathname(temp.path()).mkdirSync()
-  assert.ok path.existsSync()
+  path = new Pathname(temp.path()).mkdir()
+  assert.ok path.exists()
   assert.ok path.isDirectorySync()
   # assert.equal path.statSync().mode, 0700 #TODO
 finally
@@ -179,7 +179,7 @@ finally
 new Pathname(temp.path()).mkdir undefined, (err, path) ->
   try
     assert.ifError err
-    assert.ok path.existsSync()
+    assert.ok path.exists()
     assert.ok path.isDirectorySync()
     # assert.equal path.statSync().mode, 0700 #TODO
   finally
@@ -188,7 +188,7 @@ new Pathname(temp.path()).mkdir undefined, (err, path) ->
 new Pathname(temp.path()).mkdir (err, path) ->
   try
     assert.ifError err
-    assert.ok path.existsSync()
+    assert.ok path.exists()
     assert.ok path.isDirectorySync()
     # assert.equal path.statSync().mode, 0700 #TODO
   finally
@@ -197,39 +197,22 @@ new Pathname(temp.path()).mkdir (err, path) ->
 
 ## test opens file (sync)
 with_tmpfile (path, fd) ->
-  core.fs.writeFileSync(path, 'foo')
-  core.fs.closeSync(fd)
-
-  new Pathname(path).openSync 'r', 0666, (_fd) ->
-    fd = _fd
-    buffer = new Buffer(3)
-    core.fs.readSync(_fd, buffer, 0, 3, 0)
-    assert.equal buffer.toString(), 'foo'
-
-  assert.closed(fd)
-
-  new Pathname(path).openSync 'r', (_fd) ->
-    fd = _fd
-    buffer = new Buffer(3)
-    core.fs.readSync(_fd, buffer, 0, 3, 0)
-    assert.equal buffer.toString(), 'foo'
-
-  assert.closed(fd)
-
-  new Pathname(path).openSync (_fd) ->
-    fd = _fd
-    buffer = new Buffer(3)
-    core.fs.readSync(_fd, buffer, 0, 3, 0)
-    assert.equal buffer.toString(), 'foo'
-
-  assert.closed(fd)
-
   try
-    new Pathname(path).openSync (_fd) ->
-      fd = _fd
-      throw new Error("handle me")
+    core.fs.writeFileSync(path, 'foo')
+    core.fs.closeSync(fd)
+
+    _fd = new Pathname(path).open('r', 0666)
+    buffer = new Buffer(3)
+    core.fs.readSync(_fd, buffer, 0, 3, 0)
+    assert.equal buffer.toString(), 'foo'
+
+    _fd = new Pathname(path).open('r')
+    buffer = new Buffer(3)
+    core.fs.readSync(_fd, buffer, 0, 3, 0)
+    assert.equal buffer.toString(), 'foo'
+
   finally
-    assert.closed(fd)
+    core.fs.close(fd)
 
 ## test opens file (async)
 with_tmpfile (path, fd) ->
@@ -244,13 +227,6 @@ with_tmpfile (path, fd) ->
     assert.defered.closed(_fd)
 
   new Pathname(path).open 'r', (err, _fd) ->
-    assert.ifError(err)
-    buffer = new Buffer(3)
-    core.fs.readSync(_fd, buffer, 0, 3, 0)
-    assert.equal buffer.toString(), 'foo'
-    assert.defered.closed(_fd)
-
-  new Pathname(path).open (err, _fd) ->
     assert.ifError(err)
     buffer = new Buffer(3)
     core.fs.readSync(_fd, buffer, 0, 3, 0)
@@ -314,14 +290,14 @@ assert.deepEqual new Pathname('/tmp/foo/bar'    ).parent(), new Pathname('/tmp/f
 ## test creates file
 try
   path = new Pathname(temp.path()).touchSync()
-  assert.ok path.existsSync()
+  assert.ok path.exists()
   assert.ok path.isFileSync()
 finally
   core.fs.unlinkSync(path.toString()) if path?
 
 new Pathname(temp.path()).touch (err, path) ->
   try
-    assert.ok path.existsSync()
+    assert.ok path.exists()
     assert.ok path.isFileSync()
   finally
     core.fs.unlinkSync(path.toString()) if path?
@@ -332,8 +308,8 @@ with_tmpdir (path) ->
   try
     root = new Pathname(path)
     root.join('bar'        ).touchSync()
-    root.join('boo'        ).mkdirSync()
-    root.join('boo/moo'    ).mkdirSync()
+    root.join('boo'        ).mkdir()
+    root.join('boo/moo'    ).mkdir()
     root.join('boo/moo/zoo').touchSync()
 
     assert.ok root.treeSync().every (path) -> path.constructor == Pathname
@@ -370,8 +346,8 @@ with_tmpdir (path) ->
   finally
     if root?
       root.join('boo/moo/zoo').unlink()
-      root.join('boo/moo'    ).rmdirSync()
-      root.join('boo'        ).rmdirSync()
+      root.join('boo/moo'    ).rmdir()
+      root.join('boo'        ).rmdir()
       root.join('bar'        ).unlink()
 
 
@@ -380,8 +356,8 @@ with_tmpdir (path) ->
   try
     root = new Pathname(path)
     root.join('bar'        ).touchSync()
-    root.join('boo'        ).mkdirSync()
-    root.join('boo/moo'    ).mkdirSync()
+    root.join('boo'        ).mkdir()
+    root.join('boo/moo'    ).mkdir()
     root.join('boo/moo/zoo').touchSync()
 
     # make sure root is a tmp dir
@@ -390,12 +366,12 @@ with_tmpdir (path) ->
 
     root.rmRSync()
 
-    assert.equal root.join('boo').existsSync(), false
+    assert.equal root.join('boo').exists(), false
   finally
-    if root?.existsSync()
+    if root?.exists()
       root.join('boo/moo/zoo').unlink()
-      root.join('boo/moo'    ).rmdirSync()
-      root.join('boo'        ).rmdirSync()
+      root.join('boo/moo'    ).rmdir()
+      root.join('boo'        ).rmdir()
       root.join('bar'        ).unlink()
 
 
