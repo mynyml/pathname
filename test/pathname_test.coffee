@@ -115,7 +115,7 @@ assert.ok not new Pathname(temp.path()).existsSync()
 
 ## test queries stats
 with_tmpdir (path) ->
-  assert.equal new Pathname(path).statSync().ino, core.fs.statSync(path).ino
+  assert.equal new Pathname(path).stat().ino, core.fs.statSync(path).ino
 
 with_tmpdir (path) ->
   new Pathname(path).stat (err, info) ->
@@ -147,7 +147,7 @@ with_tmpfile (path) ->
 
 with_tmpfile (path) ->
   path = new Pathname(path)
-  path.unlinkSync()
+  path.unlink()
   assert.ok not path.existsSync()
   assert.ok not path.isFileSync()
 
@@ -369,10 +369,10 @@ with_tmpdir (path) ->
     assert.equal root.treeSync(null     ).length, tree.length
   finally
     if root?
-      root.join('boo/moo/zoo').unlinkSync()
+      root.join('boo/moo/zoo').unlink()
       root.join('boo/moo'    ).rmdirSync()
       root.join('boo'        ).rmdirSync()
-      root.join('bar'        ).unlinkSync()
+      root.join('bar'        ).unlink()
 
 
 ## deletes directory tree
@@ -393,10 +393,10 @@ with_tmpdir (path) ->
     assert.equal root.join('boo').existsSync(), false
   finally
     if root?.existsSync()
-      root.join('boo/moo/zoo').unlinkSync()
+      root.join('boo/moo/zoo').unlink()
       root.join('boo/moo'    ).rmdirSync()
       root.join('boo'        ).rmdirSync()
-      root.join('bar'        ).unlinkSync()
+      root.join('bar'        ).unlink()
 
 
 ###

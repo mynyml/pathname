@@ -45,32 +45,28 @@ class Pathname
     core.path.exists(@path, cb)
 
   existsSync: ->
-    try core.fs.statSync(@path); true
-    catch e then                 false
+    try @stat(@path); true
+    catch e then      false
 
   # --------------------------------------------------
   # fs functions
   # --------------------------------------------------
 
-  # TODO unify
   stat: (cb) ->
-    core.fs.stat(@path, cb)
+    if cb?
+      core.fs.stat(@path, cb)
+    else
+      core.fs.statSync(@path)
 
-  statSync: ->
-    core.fs.statSync(@path)
-
-  # TODO rename to realpath
   realpathSync: ->
     new @constructor(core.fs.realpathSync(@path))
 
-  # TODO unify
   unlink: (cb) ->
-    core.fs.unlink(@path, cb)
+    if cb?
+      core.fs.unlink(@path, cb)
+    else
+      core.fs.unlinkSync(@path)
 
-  unlinkSync: ->
-    core.fs.unlinkSync(@path)
-
-  # TODO unify
   rmdir: (cb) ->
     core.fs.rmdir(@path, cb)
 
@@ -129,7 +125,7 @@ class Pathname
       exists and @stat (err, stats) -> cb(err, stats.isFile())
 
   isFileSync: ->
-    @existsSync() and @statSync().isFile()
+    @existsSync() and @stat().isFile()
 
   # TODO unify
   isDirectory: (cb) ->
@@ -137,7 +133,7 @@ class Pathname
       exists and @stat (err, stats) -> cb(err, stats.isDirectory())
 
   isDirectorySync: ->
-    @existsSync() and @statSync().isDirectory()
+    @existsSync() and @stat().isDirectory()
 
   # TODO
   # isBlockDevice
