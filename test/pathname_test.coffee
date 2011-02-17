@@ -87,13 +87,15 @@ assert.equal new Pathname("/tmp/foo/").join("bar", "baz").toString(), "/tmp/foo/
 
 
 ## test extracts dirname
-assert.equal new Pathname('/tmp/foo/bar.txt').dirname(), '/tmp/foo'
-assert.equal new Pathname('/tmp/foo/bar'    ).dirname(), '/tmp/foo'
+assert.equal new Pathname('/tmp/foo/bar.txt').dirname().constructor, Pathname
+assert.equal new Pathname('/tmp/foo/bar.txt').dirname().toString(), '/tmp/foo'
+assert.equal new Pathname('/tmp/foo/bar'    ).dirname().toString(), '/tmp/foo'
 
 
 ## test extracts basename
-assert.equal new Pathname('/tmp/foo'    ).basename(), 'foo'
-assert.equal new Pathname('/tmp/foo.ext').basename(), 'foo.ext'
+assert.equal new Pathname('/tmp/foo'    ).basename().constructor, Pathname
+assert.equal new Pathname('/tmp/foo'    ).basename().toString(), 'foo'
+assert.equal new Pathname('/tmp/foo.ext').basename().toString(), 'foo.ext'
 
 
 ## test extracts extension
@@ -363,7 +365,6 @@ with_tmpdir (path) ->
       root.join('boo/moo'    ).rmdir()
       root.join('boo'        ).rmdir()
       root.join('bar'        ).unlink()
-
 
 
 ## deletes directory tree

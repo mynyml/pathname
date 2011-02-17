@@ -22,7 +22,7 @@ extractCallback = (args...) ->
 class Pathname
 
   constructor: (path) ->
-    @path = core.path.normalize(path).replace(/\/$/,'')
+    @path = core.path.normalize(path.toString()).replace(/\/$/,'')
 
   # --------------------------------------------------
   # path functions
@@ -32,10 +32,10 @@ class Pathname
     new @constructor(core.path.join(@path, paths...))
 
   dirname: ->
-    core.path.dirname(@path)
+    new @constructor(core.path.dirname(@path))
 
   basename: (ext) ->
-    core.path.basename(@path, ext)
+    new @constructor(core.path.basename(@path, ext))
 
   extname: ->
     core.path.extname(@path)
@@ -140,7 +140,7 @@ class Pathname
     @path
 
   parent: ->
-    new @constructor(@dirname())
+    @dirname()
 
   touch: (cb) ->
     if cb?
