@@ -6,14 +6,17 @@ core =
 
 
 global.puts    = core.sys.puts
-global.debug   = core.util.debug
 global.inspect = core.util.inspect
-global.d       = (x) -> debug inspect x
+global.l       = console.log
+global.d       = (x) -> console.log("DEBUG: " + inspect x)
 
 _        = require('underscore')
 assert   = require('assert')
 temp     = require('temp')
 Pathname = require('../src/index')
+
+process._events = {}
+process.setMaxListeners(50)
 
 # --------------------------------------------------
 # Helpers
@@ -41,19 +44,25 @@ assert.open = (fd) ->
 assert.match = (actual, expected) ->
   assert.ok expected.test(actual), "Expected #{expected} to match #{actual}"
 
-assert.__defineGetter__ 'defered', ->
-  proxy = {}
-  delete @.defered
-  for key, val of @ when val?.constructor is Function
-    proxy[key] = (args...) ->
-      process.on 'exit', -> val(args...)
-  @.__defineGetter__('defered', arguments.callee)
-  proxy
+# assert.__defineGetter__ 'defered', ->
+#   proxy = {}
+#   delete @.defered
+#   for key, val of @ when val?.constructor is Function
+#     proxy[key] = (args...) ->
+#       process.on 'exit', -> val(args...)
+#   @.__defineGetter__('defered', arguments.callee)
+#   proxy
+
 
 # source: http://efreedom.com/Question/1-3561493/RegExpescape-Function-Javascript
 # author: bobince
 RegExp.escape = (exp) ->
   exp.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
+
+up = (e) ->
+  console.log(e.stack)
+  console.log(e.message) if e.message?
+  throw e
 
 # --------------------------------------------------
 # Tests
@@ -143,13 +152,13 @@ with_tmpfile (path) ->
   path.unlink (err) ->
     assert.ifError(err)
     assert.ok not path.exists()
-    assert.ok not path.isFileSync()
+    assert.ok not path.isFile()
 
 with_tmpfile (path) ->
   path = new Pathname(path)
   path.unlink()
   assert.ok not path.exists()
-  assert.ok not path.isFileSync()
+  assert.ok not path.isFile()
 
 
 ## test removes empty directory
@@ -158,20 +167,20 @@ with_tmpdir (path) ->
   path.rmdir (err) ->
     assert.ifError(err)
     assert.ok not path.exists()
-    assert.ok not path.isDirectorySync()
+    assert.ok not path.isDirectory()
 
 with_tmpdir (path) ->
   path = new Pathname(path)
   path.rmdir()
   assert.ok not path.exists()
-  assert.ok not path.isDirectorySync()
+  assert.ok not path.isDirectory()
 
 
 ## test creates directory
 try
   path = new Pathname(temp.path()).mkdir()
   assert.ok path.exists()
-  assert.ok path.isDirectorySync()
+  assert.ok path.isDirectory()
   # assert.equal path.statSync().mode, 0700 #TODO
 finally
   core.fs.rmdirSync(path.toString()) if path?
@@ -180,7 +189,7 @@ new Pathname(temp.path()).mkdir undefined, (err, path) ->
   try
     assert.ifError err
     assert.ok path.exists()
-    assert.ok path.isDirectorySync()
+    assert.ok path.isDirectory()
     # assert.equal path.statSync().mode, 0700 #TODO
   finally
     core.fs.rmdirSync(path.toString()) if path?
@@ -189,7 +198,7 @@ new Pathname(temp.path()).mkdir (err, path) ->
   try
     assert.ifError err
     assert.ok path.exists()
-    assert.ok path.isDirectorySync()
+    assert.ok path.isDirectory()
     # assert.equal path.statSync().mode, 0700 #TODO
   finally
     core.fs.rmdirSync(path.toString()) if path?
@@ -214,6 +223,7 @@ with_tmpfile (path, fd) ->
   finally
     core.fs.close(fd)
 
+
 ## test opens file (async)
 with_tmpfile (path, fd) ->
   core.fs.writeFileSync(path, 'foo')
@@ -224,24 +234,26 @@ with_tmpfile (path, fd) ->
     buffer = new Buffer(3)
     core.fs.readSync(_fd, buffer, 0, 3, 0)
     assert.equal buffer.toString(), 'foo'
-    assert.defered.closed(_fd)
+    process.on 'exit', ->
+      assert.closed(_fd)
 
   new Pathname(path).open 'r', (err, _fd) ->
     assert.ifError(err)
     buffer = new Buffer(3)
     core.fs.readSync(_fd, buffer, 0, 3, 0)
     assert.equal buffer.toString(), 'foo'
-    assert.defered.closed(_fd)
+    process.on 'exit', ->
+      assert.closed(_fd)
 
 
 ## test knows path is a file
 with_tmpfile (path) ->
-  assert.ok new Pathname(path).isFileSync()
+  assert.ok new Pathname(path).isFile()
 
 with_tmpdir (path) ->
-  assert.ok not new Pathname(path).isFileSync()
+  assert.ok not new Pathname(path).isFile()
 
-assert.ok not new Pathname(temp.path()).isFileSync()
+assert.ok not new Pathname(temp.path()).isFile()
 
 with_tmpfile (path) ->
   new Pathname(path).isFile (err, isFile) ->
@@ -260,12 +272,12 @@ new Pathname(temp.path()).isFile (err, isFile) ->
 
 ## test knows path is a dir
 with_tmpdir (path) ->
-  assert.ok new Pathname(path).isDirectorySync()
+  assert.ok new Pathname(path).isDirectory()
 
 with_tmpfile (path) ->
-  assert.ok not new Pathname(path).isDirectorySync()
+  assert.ok not new Pathname(path).isDirectory()
 
-assert.ok not new Pathname(temp.path()).isDirectorySync()
+assert.ok not new Pathname(temp.path()).isDirectory()
 
 with_tmpdir (path) ->
   new Pathname(path).isDirectory (err, isDirectory) ->
@@ -289,16 +301,16 @@ assert.deepEqual new Pathname('/tmp/foo/bar'    ).parent(), new Pathname('/tmp/f
 
 ## test creates file
 try
-  path = new Pathname(temp.path()).touchSync()
+  path = new Pathname(temp.path()).touch()
   assert.ok path.exists()
-  assert.ok path.isFileSync()
+  assert.ok path.isFile()
 finally
   core.fs.unlinkSync(path.toString()) if path?
 
 new Pathname(temp.path()).touch (err, path) ->
   try
     assert.ok path.exists()
-    assert.ok path.isFileSync()
+    assert.ok path.isFile()
   finally
     core.fs.unlinkSync(path.toString()) if path?
 
@@ -307,10 +319,10 @@ new Pathname(temp.path()).touch (err, path) ->
 with_tmpdir (path) ->
   try
     root = new Pathname(path)
-    root.join('bar'        ).touchSync()
+    root.join('bar'        ).touch()
     root.join('boo'        ).mkdir()
     root.join('boo/moo'    ).mkdir()
-    root.join('boo/moo/zoo').touchSync()
+    root.join('boo/moo/zoo').touch()
 
     assert.ok root.treeSync().every (path) -> path.constructor == Pathname
 
@@ -343,6 +355,8 @@ with_tmpdir (path) ->
 
     assert.equal root.treeSync(undefined).length, tree.length
     assert.equal root.treeSync(null     ).length, tree.length
+  catch e
+    up(e)
   finally
     if root?
       root.join('boo/moo/zoo').unlink()
@@ -351,28 +365,32 @@ with_tmpdir (path) ->
       root.join('bar'        ).unlink()
 
 
+
 ## deletes directory tree
 with_tmpdir (path) ->
   try
     root = new Pathname(path)
-    root.join('bar'        ).touchSync()
+    root.join('bar'        ).touch()
     root.join('boo'        ).mkdir()
     root.join('boo/moo'    ).mkdir()
-    root.join('boo/moo/zoo').touchSync()
+    root.join('boo/moo/zoo').touch()
 
-    # make sure root is a tmp dir
+    ## make sure root is a tmp dir
     regexp = new RegExp("^#{RegExp.escape(temp.dir)}")
     assert.match root.realpathSync().toString(), regexp
 
     root.rmRSync()
 
-    assert.equal root.join('boo').exists(), false
+    assert.ok(not root.join('boo').exists())
+  catch e
+    up(e)
   finally
     if root?.exists()
       root.join('boo/moo/zoo').unlink()
       root.join('boo/moo'    ).rmdir()
       root.join('boo'        ).rmdir()
       root.join('bar'        ).unlink()
+      root.rmdir()
 
 
 ###
