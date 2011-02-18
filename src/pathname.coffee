@@ -93,6 +93,19 @@ class Pathname
     else
       core.fs.openSync(@path, flags, mode)
 
+  rename: (path, cb) ->
+    [cb, path] = extractCallback(path, cb)
+
+    if cb?
+      core.fs.rename @path, path.toString(), (err) =>
+        if err?
+          cb(err, null)
+        else
+          cb(null, new @constructor(path.toString()))
+    else
+      core.fs.renameSync(@path, path.toString())
+      new @constructor(path.toString())
+
   # TODO
   # rename
   # truncate

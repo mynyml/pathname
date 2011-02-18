@@ -248,6 +248,39 @@ with_tmpfile (path, fd) ->
       assert.closed(_fd)
 
 
+## test renames a path
+with_tmpdir (path) ->
+  path = new Pathname(path)
+  curr = path.join('foo').touch()
+  next = path.join('bar')
+
+  assert.ok curr.isFile()
+
+  actual = curr.rename(next)
+
+  assert.equal actual.constructor, Pathname
+  assert.equal actual.toString(), next.toString()
+  assert.ok    actual.isFile()
+
+  assert.ok    not curr.exists()
+  assert.equal curr.toString(), path.join('foo') #ensure immutability
+
+with_tmpdir (path) ->
+  path = new Pathname(path)
+  curr = path.join('foo').touch()
+  next = path.join('bar')
+
+  assert.ok curr.isFile()
+
+  curr.rename next, (err, actual) ->
+    assert.equal actual.constructor, Pathname
+    assert.equal actual.toString(), next.toString()
+    assert.ok    actual.isFile()
+
+    assert.ok    not curr.exists()
+    assert.equal curr.toString(), path.join('foo') #ensure immutability
+
+
 ## test knows path is a file
 with_tmpfile (path) ->
   assert.ok new Pathname(path).isFile()
