@@ -123,14 +123,20 @@ class Pathname
   isFile: (cb) ->
     if cb?
       @exists (exists) =>
-        exists and @stat (err, stats) -> cb(err, stats.isFile())
+        if not exists
+          cb(null, false)
+        else
+          @stat (err, stats) -> cb(err, stats.isFile())
     else
       @exists() and @stat().isFile()
 
   isDirectory: (cb) ->
     if cb?
       @exists (exists) =>
-        exists and @stat (err, stats) -> cb(err, stats.isDirectory())
+        if not exists
+          cb(null, false)
+        else
+          @stat (err, stats) -> cb(err, stats.isDirectory())
     else
       @exists() and @stat().isDirectory()
 
