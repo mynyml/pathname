@@ -98,16 +98,12 @@ class Pathname
 
     if cb?
       core.fs.rename @path, path.toString(), (err) =>
-        if err?
-          cb(err, null)
-        else
-          cb(null, new @constructor(path.toString()))
+        cb(err, new @constructor(path.toString()))
     else
       core.fs.renameSync(@path, path.toString())
       new @constructor(path.toString())
 
   # TODO
-  # rename
   # truncate
   # chmod
   # lstat
