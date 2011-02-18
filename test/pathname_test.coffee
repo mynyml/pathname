@@ -123,6 +123,10 @@ with_tmpfile (path) ->
 ## test knows path doesn't exist
 assert.ok not new Pathname(temp.path()).exists()
 
+with_tmpdir (path) ->
+  new Pathname(path).join('foo').exists (exists) ->
+    assert.ok not exists
+
 
 ## test queries stats
 with_tmpdir (path) ->
@@ -273,6 +277,7 @@ with_tmpdir (path) ->
   assert.ok curr.isFile()
 
   curr.rename next, (err, actual) ->
+    assert.ifError err
     assert.equal actual.constructor, Pathname
     assert.equal actual.toString(), next.toString()
     assert.ok    actual.isFile()
