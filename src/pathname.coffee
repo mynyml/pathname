@@ -104,6 +104,21 @@ class Pathname
       core.fs.renameSync(@path, path.toString())
       new @constructor(path.toString())
 
+  # TODO figure out "Bad file descriptor" error with fs.truncate()
+  truncate: (len, cb) ->
+    [cb, len] = extractCallback(len, cb)
+
+    if cb?
+      @open 'r+', 0666, (err, fd) ->
+        if err?
+          cb(err)
+        else
+          core.fs.truncate(fd, len, cb)
+          # core.fs.truncateSync(fd, len)
+          # cb()
+    else
+      core.fs.truncateSync(@open('r+', 0666), len)
+
   readFile: (encoding, cb) ->
     [cb, encoding] = extractCallback(encoding, cb)
 

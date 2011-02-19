@@ -286,6 +286,24 @@ with_tmpdir (path) ->
     assert.equal curr.toString(), path.join('foo') #ensure immutability
 
 
+# test truncates a file
+with_tmpfile (path) ->
+  path = new Pathname(path)
+
+  path.writeFile('foobar')
+  path.truncate(3)
+
+  assert.equal path.readFile().toString(), 'foo'
+
+# with_tmpfile (path) ->
+#   path = new Pathname(path)
+#
+#   path.writeFile('foobar')
+#   path.truncate 3, (err) ->
+#     assert.ifError(err)
+#     assert.equal path.readFile().toString(), 'foo'
+
+
 # test reads from a file
 with_tmpfile (path) ->
   core.fs.writeFileSync(path, 'foo')
