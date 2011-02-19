@@ -81,11 +81,12 @@ class Pathname
       core.fs.mkdirSync(@path, mode)
       @
 
+  # TODO mode defaults to 0666
   open: (flags, mode, cb) ->
     [cb, flags, mode] = extractCallback(flags, mode, cb)
 
     if cb?
-      fd = core.fs.open @path, flags, mode, (err, fd) ->
+      core.fs.open @path, flags, mode, (err, fd) ->
         try
           cb(err, fd)
         finally
@@ -102,6 +103,22 @@ class Pathname
     else
       core.fs.renameSync(@path, path.toString())
       new @constructor(path.toString())
+
+  readFile: (encoding, cb) ->
+    [cb, encoding] = extractCallback(encoding, cb)
+
+    if cb?
+      core.fs.readFile @path, encoding, cb
+    else
+      core.fs.readFileSync(@path, encoding)
+
+  writeFile: (data, encoding, cb) ->
+    [cb, data, encoding] = extractCallback(data, encoding, cb)
+
+    if cb?
+      core.fs.writeFile @path, data, encoding, cb
+    else
+      core.fs.writeFileSync(@path, data, encoding)
 
   # TODO
   # truncate
@@ -157,6 +174,8 @@ class Pathname
   parent: ->
     @dirname()
 
+  # FIXME calls cb twice if fs.open() provides err
+  # FIXME use try/catch in sync mode
   touch: (cb) ->
     if cb?
       core.fs.open @path, 'w+', undefined, (err, fd) =>

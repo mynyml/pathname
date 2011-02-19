@@ -134,7 +134,7 @@ with_tmpdir (path) ->
 
 with_tmpdir (path) ->
   new Pathname(path).stat (err, info) ->
-    assert.ifError err
+    assert.ifError(err)
     assert.equal info.ino, core.fs.statSync(path).ino
 
 
@@ -193,7 +193,7 @@ finally
 
 new Pathname(temp.path()).mkdir undefined, (err, path) ->
   try
-    assert.ifError err
+    assert.ifError(err)
     assert.ok path.exists()
     assert.ok path.isDirectory()
     # assert.equal path.statSync().mode, 0700 #TODO
@@ -202,7 +202,7 @@ new Pathname(temp.path()).mkdir undefined, (err, path) ->
 
 new Pathname(temp.path()).mkdir (err, path) ->
   try
-    assert.ifError err
+    assert.ifError(err)
     assert.ok path.exists()
     assert.ok path.isDirectory()
     # assert.equal path.statSync().mode, 0700 #TODO
@@ -277,13 +277,46 @@ with_tmpdir (path) ->
   assert.ok curr.isFile()
 
   curr.rename next, (err, actual) ->
-    assert.ifError err
+    assert.ifError(err)
     assert.equal actual.constructor, Pathname
     assert.equal actual.toString(), next.toString()
     assert.ok    actual.isFile()
 
     assert.ok    not curr.exists()
     assert.equal curr.toString(), path.join('foo') #ensure immutability
+
+
+# test reads from a file
+with_tmpfile (path) ->
+  core.fs.writeFileSync(path, 'foo')
+
+  path = new Pathname(path)
+  assert.equal path.readFile().constructor, Buffer
+  assert.equal path.readFile().toString(), 'foo'
+
+with_tmpfile (path) ->
+  core.fs.writeFileSync(path, 'foo')
+
+  path = new Pathname(path)
+  path.readFile (err, data) ->
+    assert.ifError(err)
+    assert.equal path.readFile().constructor, Buffer
+    assert.equal path.readFile().toString(), 'foo'
+
+
+# test writes to a file
+with_tmpfile (path) ->
+  path = new Pathname(path)
+  path.writeFile('foo')
+
+  assert.equal path.readFile().toString(), 'foo'
+
+with_tmpfile (path) ->
+  path = new Pathname(path)
+
+  path.writeFile 'foo', (err) ->
+    assert.ifError(err)
+    assert.equal path.readFile().toString(), 'foo'
 
 
 ## test knows path is a file
@@ -297,7 +330,7 @@ assert.ok not new Pathname(temp.path()).isFile()
 
 with_tmpfile (path) ->
   new Pathname(path).isFile (err, isFile) ->
-    assert.ifError err
+    assert.ifError(err)
     assert.ok isFile
 
 with_tmpdir (path) ->
