@@ -37,6 +37,7 @@ assert.include = (enumerable, value, message) ->
 
 assert.closed = (fd) ->
   assert.throws (-> core.fs.readSync(fd, new Buffer(1), 0, 1, 0)), Error, "fd '#{fd}' is open, expected it to be closed"
+  # core.fs.fstatSync(fd)
 
 assert.open = (fd) ->
   assert.doesNotThrow (-> core.fs.readSync(fd, new Buffer(1), 0, 1, 0)), Error, "fd '#{fd}' is closed, expected it to be open"
@@ -138,7 +139,7 @@ with_tmpdir (path) ->
     assert.equal info.ino, core.fs.statSync(path).ino
 
 
-# test expands path
+## test expands path
 # FIXME
 #with_tmpdir (path) ->
 #  cwd = process.cwd()
@@ -212,6 +213,7 @@ new Pathname(temp.path()).mkdir (err, path) ->
 
 
 ## test opens file (sync)
+# TODO test reuses fd
 with_tmpfile (path, fd) ->
   try
     core.fs.writeFileSync(path, 'foo')
@@ -232,6 +234,7 @@ with_tmpfile (path, fd) ->
 
 
 ## test opens file (async)
+# TODO test reuses fd
 with_tmpfile (path, fd) ->
   core.fs.writeFileSync(path, 'foo')
   core.fs.closeSync(fd)
@@ -251,6 +254,40 @@ with_tmpfile (path, fd) ->
     assert.equal buffer.toString(), 'foo'
     process.on 'exit', ->
       assert.closed(_fd)
+
+
+## test closes a file
+with_tmpdir (dir) ->
+  path = new Pathname(dir).join('foo')
+
+  path.open('w+')
+  assert.open(path.fd)
+
+  path.close()
+  assert.closed(path.fd)
+
+with_tmpdir (dir) ->
+  path = new Pathname(dir).join('foo')
+
+  path.open('w+')
+  assert.open(path.fd)
+
+  path.close (err) ->
+    assert.ifError(err)
+    assert.closed(path.fd)
+
+
+## test closing a file is a noop when file is already closed
+with_tmpdir (dir) ->
+  path = new Pathname(dir).join('foo')
+
+  fd = path.open('w+')
+  assert.open(fd)
+
+  path.close()
+  assert.closed(fd)
+
+  assert.doesNotThrow (-> path.close()), /Bad file descriptor/
 
 
 ## test renames a path
@@ -287,7 +324,7 @@ with_tmpdir (path) ->
     assert.equal curr.toString(), path.join('foo') #ensure immutability
 
 
-# test truncates a file
+## test truncates a file
 with_tmpfile (path) ->
   path = new Pathname(path)
 
@@ -305,7 +342,7 @@ with_tmpfile (path) ->
 #     assert.equal path.readFile().toString(), 'foo'
 
 
-# test changes file mode
+## test changes file mode
 with_tmpdir (dir) ->
   path = new Pathname(dir).join('foo')
   path.open 'w+', 0644, (err, fd) ->
@@ -322,7 +359,7 @@ with_tmpdir (dir) ->
       assert.ok(path.stat().mode.toString(8) is '100622')
 
 
-# test reads from a file
+## test reads from a file
 with_tmpfile (path) ->
   core.fs.writeFileSync(path, 'foo')
 
@@ -340,7 +377,7 @@ with_tmpfile (path) ->
     assert.equal path.readFile().toString(), 'foo'
 
 
-# test writes to a file
+## test writes to a file
 with_tmpfile (path) ->
   path = new Pathname(path)
   path.writeFile('foo')

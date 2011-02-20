@@ -82,17 +82,34 @@ class Pathname
       @
 
   # TODO mode defaults to 0666
+  # FIXME so many ifelses!
   open: (flags, mode, cb) ->
     [cb, flags, mode] = extractCallback(flags, mode, cb)
 
     if cb?
-      core.fs.open @path, flags, mode, (err, fd) ->
-        try
-          cb(err, fd)
-        finally
-          core.fs.closeSync(fd)
+      if @fd?
+        process.nextTick(=> cb(null, @fd))
+      else
+        core.fs.open @path, flags, mode, (err, @fd) =>
+          try
+            cb(err, @fd)
+          finally
+            @close()
     else
-      core.fs.openSync(@path, flags, mode)
+      return @fd if @fd?
+      @fd = core.fs.openSync(@path, flags, mode)
+
+  close: (cb) ->
+    if cb?
+      if @fd?
+        core.fs.close(@fd, cb)
+        delete @fd
+      else
+        cb(null)
+    else
+      if @fd?
+        core.fs.closeSync(@fd)
+        delete @fd
 
   rename: (path, cb) ->
     [cb, path] = extractCallback(path, cb)
@@ -148,9 +165,6 @@ class Pathname
   # link
   # symlink
   # readlink
-  # close
-  # read    (use readFile)
-  # write   (use writeFile)
   # watch
   # unwatch
 
