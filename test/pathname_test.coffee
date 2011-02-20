@@ -183,13 +183,14 @@ with_tmpdir (path) ->
 
 
 ## test creates directory
-try
-  path = new Pathname(temp.path()).mkdir()
-  assert.ok path.exists()
-  assert.ok path.isDirectory()
-  # assert.equal path.statSync().mode, 0700 #TODO
-finally
-  core.fs.rmdirSync(path.toString()) if path?
+process.nextTick ->
+  try
+    path = new Pathname(temp.path()).mkdir()
+    assert.ok path.exists()
+    assert.ok path.isDirectory()
+    # assert.equal path.statSync().mode, 0700 #TODO
+  finally
+    core.fs.rmdirSync(path.toString()) if path?
 
 new Pathname(temp.path()).mkdir undefined, (err, path) ->
   try
@@ -304,6 +305,23 @@ with_tmpfile (path) ->
 #     assert.equal path.readFile().toString(), 'foo'
 
 
+# test changes file mode
+with_tmpdir (dir) ->
+  path = new Pathname(dir).join('foo')
+  path.open 'w+', 0644, (err, fd) ->
+    assert.ok(path.stat().mode.toString(8) is '100644')
+    path.chmod(0622)
+    assert.ok(path.stat().mode.toString(8) is '100622')
+
+with_tmpdir (dir) ->
+  path = new Pathname(dir).join('bar')
+  path.open 'w+', 0644, (err, fd) ->
+    assert.ok(path.stat().mode.toString(8) is '100644')
+    path.chmod 0622, (err) ->
+      assert.ifError(err)
+      assert.ok(path.stat().mode.toString(8) is '100622')
+
+
 # test reads from a file
 with_tmpfile (path) ->
   core.fs.writeFileSync(path, 'foo')
@@ -391,12 +409,13 @@ assert.deepEqual new Pathname('/tmp/foo/bar'    ).parent(), new Pathname('/tmp/f
 
 
 ## test creates file
-try
-  path = new Pathname(temp.path()).touch()
-  assert.ok path.exists()
-  assert.ok path.isFile()
-finally
-  core.fs.unlinkSync(path.toString()) if path?
+process.nextTick ->
+  try
+    path = new Pathname(temp.path()).touch()
+    assert.ok path.exists()
+    assert.ok path.isFile()
+  finally
+    core.fs.unlinkSync(path.toString()) if path?
 
 new Pathname(temp.path()).touch (err, path) ->
   try

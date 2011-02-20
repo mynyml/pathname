@@ -119,6 +119,14 @@ class Pathname
     else
       core.fs.truncateSync(@open('r+', 0666), len)
 
+  chmod: (mode, cb) ->
+    [cb, mode] = extractCallback(mode, cb)
+
+    if cb?
+      core.fs.chmod(@path, mode, cb)
+    else
+      core.fs.chmodSync(@path, mode)
+
   readFile: (encoding, cb) ->
     [cb, encoding] = extractCallback(encoding, cb)
 
@@ -136,8 +144,6 @@ class Pathname
       core.fs.writeFileSync(@path, data, encoding)
 
   # TODO
-  # truncate
-  # chmod
   # lstat
   # link
   # symlink
@@ -191,6 +197,8 @@ class Pathname
 
   # FIXME calls cb twice if fs.open() provides err
   # FIXME use try/catch in sync mode
+  # FIXME use @open()
+  # TODO  allow passing `mode` argument
   touch: (cb) ->
     if cb?
       core.fs.open @path, 'w+', undefined, (err, fd) =>
