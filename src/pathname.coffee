@@ -44,8 +44,8 @@ class Pathname
     if cb?
       core.path.exists(@path, cb)
     else
-      try @stat(@path); true
-      catch e then      false
+      try @stat(@path); yes
+      catch e then      no
 
   # TODO
   # normalize
@@ -205,7 +205,7 @@ class Pathname
     if cb?
       @exists (exists) =>
         if not exists
-          cb(null, false)
+          cb(null, no)
         else
           @stat (err, stats) -> cb(err, stats.isFile())
     else
@@ -215,7 +215,7 @@ class Pathname
     if cb?
       @exists (exists) =>
         if not exists
-          cb(null, false)
+          cb(null, no)
         else
           @stat (err, stats) -> cb(err, stats.isDirectory())
     else
