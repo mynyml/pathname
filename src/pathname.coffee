@@ -183,9 +183,14 @@ class Pathname
       core.fs.symlinkSync(@path, dstpath.toString())
       @
 
+  readlink: (cb) ->
+    if cb?
+      core.fs.readlink(@path, cb)
+    else
+      core.fs.readlinkSync(@path)
+
 
   # TODO
-  # readlink
   # watch
   # unwatch
   # read

@@ -438,6 +438,21 @@ with_tmpdir (path) ->
     assert.throws((-> path1.readFile()), Error)
 
 
+## test reads symlink path
+with_tmpdir (path) ->
+  path1 = new Pathname(path).join('foo')
+  path2 = new Pathname(path).join('bar').touch().symlink(path1)
+
+  assert.equal path1.readlink(), path2.toString()
+
+with_tmpdir (path) ->
+  path1 = new Pathname(path).join('foo')
+  path2 = new Pathname(path).join('bar').touch().symlink(path1)
+
+  path1.readlink (err, resolvedPath) ->
+    assert.equal resolvedPath, path2.toString()
+
+
 ## test knows path is a file
 with_tmpfile (path) ->
   assert.ok new Pathname(path).isFile()
