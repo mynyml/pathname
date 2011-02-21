@@ -34,6 +34,7 @@ class Pathname
   dirname: ->
     new @constructor(core.path.dirname(@path))
 
+  # FIXME return as string?
   basename: (ext) ->
     new @constructor(core.path.basename(@path, ext))
 
@@ -212,18 +213,30 @@ class Pathname
   # fs.Stats functions
   # --------------------------------------------------
 
-  for func in ['isFile', 'isDirectory', 'isBlockDevice', 'isCharacterDevice', 'isSymbolicSync', 'isFIFO', 'isSocket']
+  for func in ['isFile', 'isDirectory', 'isBlockDevice', 'isCharacterDevice', 'isFIFO', 'isSocket']
     do (func) =>
       @::[func] = (cb) ->
-        statfunc = if func is 'isSymbolicLink' then 'lstat' else 'stat'
         if cb?
           @exists (exists) =>
             if exists
-              @[statfunc]((err, stats) -> cb(err, stats[func]()))
+              @stat (err, stats) -> cb(err, stats[func]())
             else
               cb(null, no)
         else
-          @exists() and @[statfunc]()[func]()
+          @exists() and @stat()[func]()
+
+  isSymbolicLink: (cb) ->
+    if cb?
+      @lstat (err, stats) ->
+        if /^ENOENT/.test(err?.message)
+          cb(null, no)
+        else
+          cb(err, stats?.isSymbolicLink())
+    else
+      try
+        @lstat().isSymbolicLink()
+      catch e
+        no
 
   # --------------------------------------------------
   # Pathname functions
@@ -247,18 +260,17 @@ class Pathname
   treeSync: (depth) ->
     paths = [@]
 
-    if @isDirectory() and (!depth? or depth > 0)
+    if not @isSymbolicLink() and @isDirectory() and (!depth? or depth > 0)
       core.fs.readdirSync(@path).forEach (fname) => paths.push(@join(fname).treeSync(depth and (depth - 1)))
 
     flatten(paths)
 
   # TODO async version
-  # TODO account for symlinks
   rmRSync: ->
     @treeSync().reverse().forEach (path) ->
-      # if path.isFile() or path.isSymbolicSync() then path.unlinkSync()
-      if path.isFile()      then path.unlink()
-      if path.isDirectory() then path.rmdir()
+      if path.isSymbolicLink() then path.unlink()
+      if path.isFile()         then path.unlink()
+      if path.isDirectory()    then path.rmdir()
 
   # TODO
   # tree    (async)

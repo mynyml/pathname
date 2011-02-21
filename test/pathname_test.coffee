@@ -517,6 +517,17 @@ new Pathname(temp.path()).isDirectory (err, isDirectory) ->
   assert.ok not isDirectory
 
 
+## test knows path is a symlink
+with_tmpdir (dir) ->
+  path1 = new Pathname(dir).join('foo')
+  path2 = new Pathname(dir).join('bar').touch().symlink(path1)
+
+  assert.ok     path1.isFile()
+  assert.ok     path2.isFile()
+  assert.ok     path1.isSymbolicLink()
+  assert.ok not path2.isSymbolicLink()
+
+
 ## test finds parent directory
 assert.deepEqual new Pathname('/tmp/foo/bar.txt').parent(), new Pathname('/tmp/foo')
 assert.deepEqual new Pathname('/tmp/foo/bar'    ).parent(), new Pathname('/tmp/foo')
@@ -601,7 +612,7 @@ with_tmpdir (path) ->
   try
     root = new Pathname(path)
     root.join('bar'        ).touch()
-    root.join('boo'        ).mkdir()
+    root.join('boo'        ).mkdir().symlink(root.join('baz'))
     root.join('boo/moo'    ).mkdir()
     root.join('boo/moo/zoo').touch()
 
@@ -619,6 +630,7 @@ with_tmpdir (path) ->
       root.join('boo/moo/zoo').unlink()
       root.join('boo/moo'    ).rmdir()
       root.join('boo'        ).rmdir()
+      root.join('baz'        ).unlink()
       root.join('bar'        ).unlink()
       root.rmdir()
 
