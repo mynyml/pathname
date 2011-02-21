@@ -61,6 +61,12 @@ class Pathname
     else
       core.fs.statSync(@path)
 
+  lstat: (cb) ->
+    if cb?
+      core.fs.lstat(@path, cb)
+    else
+      core.fs.lstatSync(@path)
+
   # TODO async version + rename
   realpathSync: ->
     new @constructor(core.fs.realpathSync(@path))
