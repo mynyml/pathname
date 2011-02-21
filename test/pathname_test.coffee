@@ -566,28 +566,28 @@ with_tmpdir (path) ->
     root.join('boo/moo'    ).mkdir()
     root.join('boo/moo/zoo').touch()
 
-    assert.ok root.treeSync().every (path) -> path.constructor == Pathname
+    assert.ok root.tree().every (path) -> path.constructor == Pathname
 
-    tree = root.treeSync(0)
+    tree = root.tree(0)
     assert.equal   tree.length, 1
     assert.include tree, root
 
-    assert.equal root.treeSync(-1).length, tree.length
+    assert.equal root.tree(-1).length, tree.length
 
-    tree = root.treeSync(1)
+    tree = root.tree(1)
     assert.equal   tree.length, 3
     assert.include tree, root
     assert.include tree, root.join('bar')
     assert.include tree, root.join('boo')
 
-    tree = root.treeSync(2)
+    tree = root.tree(2)
     assert.equal   tree.length, 4
     assert.include tree, root
     assert.include tree, root.join('bar')
     assert.include tree, root.join('boo')
     assert.include tree, root.join('boo/moo')
 
-    tree = root.treeSync(3)
+    tree = root.tree(3)
     assert.equal   tree.length, 5
     assert.include tree, root
     assert.include tree, root.join('bar')
@@ -595,8 +595,56 @@ with_tmpdir (path) ->
     assert.include tree, root.join('boo/moo')
     assert.include tree, root.join('boo/moo/zoo')
 
-    assert.equal root.treeSync(undefined).length, tree.length
-    assert.equal root.treeSync(null     ).length, tree.length
+    assert.equal root.tree(undefined).length, tree.length
+    assert.equal root.tree(null     ).length, tree.length
+  catch e
+    up(e)
+  finally
+    if root?
+      root.join('boo/moo/zoo').unlink()
+      root.join('boo/moo'    ).rmdir()
+      root.join('boo'        ).rmdir()
+      root.join('bar'        ).unlink()
+
+with_tmpdir (path) ->
+  try
+    root = new Pathname(path)
+    root.join('bar'        ).touch()
+    root.join('boo'        ).mkdir()
+    root.join('boo/moo'    ).mkdir()
+    root.join('boo/moo/zoo').touch()
+
+    assert.ok root.tree().every (path) -> path.constructor == Pathname
+
+    tree = root.tree(0)
+    assert.equal   tree.length, 1
+    assert.include tree, root
+
+    assert.equal root.tree(-1).length, tree.length
+
+    tree = root.tree(1)
+    assert.equal   tree.length, 3
+    assert.include tree, root
+    assert.include tree, root.join('bar')
+    assert.include tree, root.join('boo')
+
+    tree = root.tree(2)
+    assert.equal   tree.length, 4
+    assert.include tree, root
+    assert.include tree, root.join('bar')
+    assert.include tree, root.join('boo')
+    assert.include tree, root.join('boo/moo')
+
+    tree = root.tree(3)
+    assert.equal   tree.length, 5
+    assert.include tree, root
+    assert.include tree, root.join('bar')
+    assert.include tree, root.join('boo')
+    assert.include tree, root.join('boo/moo')
+    assert.include tree, root.join('boo/moo/zoo')
+
+    assert.equal root.tree(undefined).length, tree.length
+    assert.equal root.tree(null     ).length, tree.length
   catch e
     up(e)
   finally
@@ -666,6 +714,8 @@ with_tmpdir (path) ->
     up(e)
   finally
     root.rmRSync() if root?.exists()
+
+
 
 ###
 

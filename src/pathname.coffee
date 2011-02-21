@@ -257,17 +257,21 @@ class Pathname
       @open('w+', mode); @close()
 
   # TODO async version
-  treeSync: (depth) ->
-    paths = [@]
+  tree: (depth, cb) ->
+    [cb, depth] = extractCallback(depth, cb)
 
-    if not @isSymbolicLink() and @isDirectory() and (!depth? or depth > 0)
-      core.fs.readdirSync(@path).forEach (fname) => paths.push(@join(fname).treeSync(depth and (depth - 1)))
+    if cb?
+    else
+      paths = [@]
 
-    flatten(paths)
+      if not @isSymbolicLink() and @isDirectory() and (!depth? or depth > 0)
+        core.fs.readdirSync(@path).forEach (fname) => paths.push(@join(fname).tree(depth and (depth - 1)))
+
+      flatten(paths)
 
   # TODO async version
   rmRSync: ->
-    @treeSync().reverse().forEach (path) ->
+    @tree().reverse().forEach (path) ->
       if path.isSymbolicLink() then path.unlink()
       if path.isFile()         then path.unlink()
       if path.isDirectory()    then path.rmdir()
