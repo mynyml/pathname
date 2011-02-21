@@ -453,6 +453,22 @@ with_tmpdir (path) ->
     assert.equal resolvedPath, path2.toString()
 
 
+## test watches and unwatches a file
+with_tmpfile (path) ->
+  called = no
+
+  path = new Pathname(path)
+  path.watchFile {}, (curr, prev) ->
+    assert.ok curr.mtime >= prev.mtime
+    called = yes
+    path.unwatchFile()
+
+  path.writeFile('foo')
+  setTimeout((->
+    assert.ok called, "file listener wasn't called"
+  ), 0)
+
+
 ## test knows path is a file
 with_tmpfile (path) ->
   assert.ok new Pathname(path).isFile()
