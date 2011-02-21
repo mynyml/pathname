@@ -270,11 +270,13 @@ class Pathname
       flatten(paths)
 
   # TODO async version
-  rmRSync: ->
-    @tree().reverse().forEach (path) ->
-      if path.isSymbolicLink() then path.unlink()
-      if path.isFile()         then path.unlink()
-      if path.isDirectory()    then path.rmdir()
+  rmR: (cb) ->
+    if cb?
+    else
+      @tree().reverse().forEach (path) ->
+        if path.isSymbolicLink() then path.unlink()
+        if path.isFile()         then path.unlink()
+        if path.isDirectory()    then path.rmdir()
 
   # TODO
   # tree    (async)

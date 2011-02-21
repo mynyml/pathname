@@ -668,7 +668,7 @@ with_tmpdir (path) ->
     regexp = new RegExp("^#{RegExp.escape(temp.dir)}")
     assert.match root.realpathSync().toString(), regexp
 
-    root.rmRSync()
+    root.rmR()
 
     assert.ok(not root.join('boo').exists())
   catch e
@@ -697,7 +697,7 @@ with_tmpdir (path) ->
   catch e
     up(e)
   finally
-    root.rmRSync() if root?.exists()
+    root.rmR() if root?.exists()
 
 with_tmpdir (path) ->
   try
@@ -713,7 +713,7 @@ with_tmpdir (path) ->
   catch e
     up(e)
   finally
-    root.rmRSync() if root?.exists()
+    root.rmR() if root?.exists()
 
 
 
