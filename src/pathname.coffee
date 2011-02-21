@@ -207,40 +207,25 @@ class Pathname
   unwatchFile: ->
     core.fs.unwatchFile(@path)
 
-
   # --------------------------------------------------
   # fs.Stats functions
   # --------------------------------------------------
 
-  isFile: (cb) ->
-    if cb?
-      @exists (exists) =>
-        if not exists
-          cb(null, no)
+  for func in ['isFile', 'isDirectory', 'isBlockDevice', 'isCharacterDevice', 'isSymbolicSync', 'isFIFO', 'isSocket']
+    do (func) =>
+      @::[func] = (cb) ->
+        statfunc = if func is 'isSymbolicLink' then 'lstat' else 'stat'
+        if cb?
+          @exists (exists) =>
+            if exists
+              @[statfunc]((err, stats) -> cb(err, stats[func]()))
+            else
+              cb(null, no)
         else
-          @stat (err, stats) -> cb(err, stats.isFile())
-    else
-      @exists() and @stat().isFile()
-
-  isDirectory: (cb) ->
-    if cb?
-      @exists (exists) =>
-        if not exists
-          cb(null, no)
-        else
-          @stat (err, stats) -> cb(err, stats.isDirectory())
-    else
-      @exists() and @stat().isDirectory()
-
-  # TODO
-  # isBlockDevice
-  # isCharacterDevice
-  # isSymbolicLink
-  # isFIFO
-  # isSocket
+          @exists() and @[statfunc]()[func]()
 
   # --------------------------------------------------
-  # pathname functions
+  # Pathname functions
   # --------------------------------------------------
 
   toString: ->
