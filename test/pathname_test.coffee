@@ -538,6 +538,13 @@ new Pathname(temp.path()).touch (err, path) ->
   finally
     core.fs.unlinkSync(path.toString()) if path?
 
+process.nextTick ->
+  try
+    path = new Pathname(temp.path()).touch(0744)
+    assert.ok(path.stat().mode.toString(8) is '100744')
+  finally
+    core.fs.unlinkSync(path.toString()) if path?
+
 
 ## test traverses directory tree recursively
 with_tmpdir (path) ->

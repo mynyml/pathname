@@ -113,14 +113,15 @@ class Pathname
   close: (cb) ->
     if cb?
       if @fd?
-        core.fs.close(@fd, cb)
+        core.fs.close @fd, (err) => cb(err, @)
         delete @fd
       else
-        cb(null)
+        cb(null, @)
     else
       if @fd?
         core.fs.closeSync(@fd)
         delete @fd
+        @
 
   rename: (path, cb) ->
     [cb, path] = extractCallback(path, cb)
@@ -234,20 +235,13 @@ class Pathname
   parent: ->
     @dirname()
 
-  # FIXME calls cb twice if fs.open() provides err
-  # FIXME use try/catch in sync mode
-  # FIXME use @open()
-  # TODO  allow passing `mode` argument
-  touch: (cb) ->
+  touch: (mode, cb) ->
+    [cb, mode] = extractCallback(mode, cb)
+
     if cb?
-      core.fs.open @path, 'w+', undefined, (err, fd) =>
-        cb(err) if err?
-        core.fs.close fd, (err) =>
-          cb(err) if err?
-          cb(null, @)
+      @open 'w+', mode, (err, _) => cb(err, @)
     else
-      core.fs.closeSync(core.fs.openSync(@path, 'w+'))
-      @
+      @open('w+', mode); @close()
 
   # TODO async version
   treeSync: (depth) ->
