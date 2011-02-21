@@ -392,6 +392,52 @@ with_tmpfile (path) ->
     assert.equal path.readFile().toString(), 'foo'
 
 
+## test creates hard link
+with_tmpdir (path) ->
+  path1 = new Pathname(path).join('foo')
+  path2 = new Pathname(path).join('bar').touch().link(path1)
+
+  path2.writeFile('data')
+  assert.equal path1.readFile(), 'data'
+
+  path2.unlink()
+  assert.equal path1.readFile(), 'data'
+
+with_tmpdir (path) ->
+  path1 = new Pathname(path).join('foo')
+  new Pathname(path).join('bar').touch().link path1, (err, path2) ->
+    assert.ifError(err)
+
+    path2.writeFile('data')
+    assert.equal path1.readFile(), 'data'
+
+    path2.unlink()
+    assert.equal path1.readFile(), 'data'
+
+
+## test creates symlink
+with_tmpdir (path) ->
+  path1 = new Pathname(path).join('foo')
+  path2 = new Pathname(path).join('bar').touch().symlink(path1)
+
+  path2.writeFile('data')
+  assert.equal path1.readFile(), 'data'
+
+  path2.unlink()
+  assert.throws((-> path1.readFile()), Error)
+
+with_tmpdir (path) ->
+  path1 = new Pathname(path).join('foo')
+  new Pathname(path).join('bar').touch().symlink path1, (err, path2) ->
+    assert.ifError(err)
+
+    path2.writeFile('data')
+    assert.equal path1.readFile(), 'data'
+
+    path2.unlink()
+    assert.throws((-> path1.readFile()), Error)
+
+
 ## test knows path is a file
 with_tmpfile (path) ->
   assert.ok new Pathname(path).isFile()

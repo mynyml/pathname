@@ -47,6 +47,10 @@ class Pathname
       try @stat(@path); true
       catch e then      false
 
+  # TODO
+  # normalize
+  # resolve (?)
+
   # --------------------------------------------------
   # fs functions
   # --------------------------------------------------
@@ -57,6 +61,7 @@ class Pathname
     else
       core.fs.statSync(@path)
 
+  # TODO async version + rename
   realpathSync: ->
     new @constructor(core.fs.realpathSync(@path))
 
@@ -160,13 +165,32 @@ class Pathname
     else
       core.fs.writeFileSync(@path, data, encoding)
 
+  link: (dstpath, cb) ->
+    [cb, dstpath] = extractCallback(dstpath, cb)
+
+    if cb?
+      core.fs.link @path, dstpath.toString(), (err) => cb(err, @)
+    else
+      core.fs.linkSync(@path, dstpath.toString())
+      @
+
+  symlink: (dstpath, cb) ->
+    [cb, dstpath] = extractCallback(dstpath, cb)
+
+    if cb?
+      core.fs.symlink @path, dstpath.toString(), (err) => cb(err, @)
+    else
+      core.fs.symlinkSync(@path, dstpath.toString())
+      @
+
+
   # TODO
-  # lstat
-  # link
-  # symlink
   # readlink
   # watch
   # unwatch
+  # read
+  # write
+  # readdir (uses tree() with depth 1)
 
   # --------------------------------------------------
   # fs.Stats functions
