@@ -189,17 +189,18 @@ class Pathname
     else
       core.fs.readlinkSync(@path)
 
+  readdir: (cb) ->
+    if cb?
+      core.fs.readdir(@path, cb)
+    else
+      core.fs.readdirSync(@path)
+
   watchFile: (args...) ->
     core.fs.watchFile(@path, args...)
 
   unwatchFile: ->
     core.fs.unwatchFile(@path)
 
-
-  # TODO
-  # read
-  # write
-  # readdir (uses tree() with depth 1)
 
   # --------------------------------------------------
   # fs.Stats functions

@@ -616,5 +616,37 @@ with_tmpdir (path) ->
       root.rmdir()
 
 
+## test reads directory contents
+with_tmpdir (path) ->
+  try
+    root = new Pathname(path)
+    root.join('bar'    ).touch()
+    root.join('boo'    ).mkdir()
+    root.join('boo/moo').touch()
+
+    assert.equal   root.readdir().length, 2
+    assert.include root.readdir(), 'bar'
+    assert.include root.readdir(), 'boo'
+  catch e
+    up(e)
+  finally
+    root.rmRSync() if root?.exists()
+
+with_tmpdir (path) ->
+  try
+    root = new Pathname(path)
+    root.join('bar'    ).touch()
+    root.join('boo'    ).mkdir()
+    root.join('boo/moo').touch()
+
+    root.readdir (err, files) ->
+      assert.equal   files.length, 2
+      assert.include files, 'bar'
+      assert.include files, 'boo'
+  catch e
+    up(e)
+  finally
+    root.rmRSync() if root?.exists()
+
 ###
 
