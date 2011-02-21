@@ -666,7 +666,7 @@ with_tmpdir (path) ->
 
     ## make sure root is a tmp dir
     regexp = new RegExp("^#{RegExp.escape(temp.dir)}")
-    assert.match root.realpathSync().toString(), regexp
+    assert.match root.realpath().toString(), regexp
 
     root.rmR()
 

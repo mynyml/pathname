@@ -68,8 +68,8 @@ class Pathname
     else
       core.fs.lstatSync(@path)
 
-  # TODO async version + rename
-  realpathSync: ->
+  # TODO async version
+  realpath: ->
     new @constructor(core.fs.realpathSync(@path))
 
   unlink: (cb) ->
