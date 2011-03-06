@@ -255,13 +255,14 @@ class Pathname
     else
       @open('w+', mode); @close()
 
+  # TODO async version not so async
   tree: (depth, cb) ->
     [cb, depth] = extractCallback(depth, cb)
 
     done  = no
     paths = [@]
 
-    # FIXME im teh uglie
+    # FIXME i are teh uglie
     if cb?
       if not @isSymbolicLink() and @isDirectory() and (!depth? or depth > 0)
         core.fs.readdir @path, (err, files) =>
@@ -289,9 +290,18 @@ class Pathname
 
       flatten(paths)
 
-  # TODO async version
+  # TODO async version not so async
   rmR: (cb) ->
     if cb?
+      @tree (err, files) ->
+        if err?
+          cb(err)
+        else
+          files.reverse().forEach (path) ->
+            if path.isSymbolicLink() then path.unlink()
+            if path.isFile()         then path.unlink()
+            if path.isDirectory()    then path.rmdir()
+          cb(null)
     else
       @tree().reverse().forEach (path) ->
         if path.isSymbolicLink() then path.unlink()

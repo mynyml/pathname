@@ -679,6 +679,22 @@ with_tmpdir (path) ->
       root.join('bar'        ).unlink()
       root.rmdir()
 
+with_tmpdir (path) ->
+  root = new Pathname(path)
+  root.join('bar'        ).touch()
+  root.join('boo'        ).mkdir().symlink(root.join('baz'))
+  root.join('boo/moo'    ).mkdir()
+  root.join('boo/moo/zoo').touch()
+
+  ## make sure root is a tmp dir
+  regexp = new RegExp("^#{RegExp.escape(temp.dir)}")
+  assert.match root.realpath().toString(), regexp
+
+  assert.throws (-> root.rmdir()), /ENOTEMPTY/
+  root.rmR (err) ->
+    assert.ifError(err)
+    assert.ok(not root.join('boo').exists())
+
 
 ## test reads directory contents
 with_tmpdir (path) ->
