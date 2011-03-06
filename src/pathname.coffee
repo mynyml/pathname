@@ -94,7 +94,6 @@ class Pathname
       @
 
   # TODO mode defaults to 0666
-  # FIXME so many ifelses!
   open: (flags, mode, cb) ->
     [cb, flags, mode] = extractCallback(flags, mode, cb)
 
@@ -256,14 +255,35 @@ class Pathname
     else
       @open('w+', mode); @close()
 
-  # TODO async version
   tree: (depth, cb) ->
     [cb, depth] = extractCallback(depth, cb)
 
-    if cb?
-    else
-      paths = [@]
+    done  = no
+    paths = [@]
 
+    # FIXME im teh uglie
+    if cb?
+      if not @isSymbolicLink() and @isDirectory() and (!depth? or depth > 0)
+        core.fs.readdir @path, (err, files) =>
+          return if done
+          if err?
+            done = yes
+            cb(err, null)
+          else
+            count = files.length
+            files.forEach (fname) =>
+              @join(fname).tree (depth and (depth - 1)), (err, _paths) ->
+                return if done #avoid calling cb more than once
+                if err?
+                  done = yes
+                  cb(err, null)
+                else
+                  paths.push(_paths)
+                  cb(null, flatten(paths)) if --count is 0
+      else
+        cb(null, paths)
+
+    else
       if not @isSymbolicLink() and @isDirectory() and (!depth? or depth > 0)
         core.fs.readdirSync(@path).forEach (fname) => paths.push(@join(fname).tree(depth and (depth - 1)))
 

@@ -607,52 +607,49 @@ with_tmpdir (path) ->
       root.join('bar'        ).unlink()
 
 with_tmpdir (path) ->
-  try
-    root = new Pathname(path)
-    root.join('bar'        ).touch()
-    root.join('boo'        ).mkdir()
-    root.join('boo/moo'    ).mkdir()
-    root.join('boo/moo/zoo').touch()
+  root = new Pathname(path)
+  root.join('bar'        ).touch()
+  root.join('boo'        ).mkdir()
+  root.join('boo/moo'    ).mkdir()
+  root.join('boo/moo/zoo').touch()
 
-    assert.ok root.tree().every (path) -> path.constructor == Pathname
+  root.tree (err, files) ->
+    assert.ifError(err)
+    assert.ok files.every (path) -> path.constructor == Pathname
 
-    tree = root.tree(0)
-    assert.equal   tree.length, 1
-    assert.include tree, root
+  root.tree 0, (err, files) ->
+    assert.ifError(err)
+    assert.equal   files.length, 1
+    assert.include files, root
 
-    assert.equal root.tree(-1).length, tree.length
+    root.tree -1, (err, files2) ->
+      assert.ifError(err)
+      assert.equal files2.length, files.length
 
-    tree = root.tree(1)
-    assert.equal   tree.length, 3
-    assert.include tree, root
-    assert.include tree, root.join('bar')
-    assert.include tree, root.join('boo')
+  root.tree 1, (err, files) ->
+    assert.equal   files.length, 3
+    assert.include files, root
+    assert.include files, root.join('bar')
+    assert.include files, root.join('boo')
 
-    tree = root.tree(2)
-    assert.equal   tree.length, 4
-    assert.include tree, root
-    assert.include tree, root.join('bar')
-    assert.include tree, root.join('boo')
-    assert.include tree, root.join('boo/moo')
+  root.tree 2, (err, files) ->
+    assert.equal   files.length, 4
+    assert.include files, root
+    assert.include files, root.join('bar')
+    assert.include files, root.join('boo')
+    assert.include files, root.join('boo/moo')
 
-    tree = root.tree(3)
-    assert.equal   tree.length, 5
-    assert.include tree, root
-    assert.include tree, root.join('bar')
-    assert.include tree, root.join('boo')
-    assert.include tree, root.join('boo/moo')
-    assert.include tree, root.join('boo/moo/zoo')
+  root.tree 3, (err, files) ->
+    assert.equal   files.length, 5
+    assert.include files, root
+    assert.include files, root.join('bar')
+    assert.include files, root.join('boo')
+    assert.include files, root.join('boo/moo')
+    assert.include files, root.join('boo/moo/zoo')
 
-    assert.equal root.tree(undefined).length, tree.length
-    assert.equal root.tree(null     ).length, tree.length
-  catch e
-    up(e)
-  finally
-    if root?
-      root.join('boo/moo/zoo').unlink()
-      root.join('boo/moo'    ).rmdir()
-      root.join('boo'        ).rmdir()
-      root.join('bar'        ).unlink()
+    root.tree undefined, (err, files2) -> assert.equal files2.length, files.length
+    root.tree null,      (err, files2) -> assert.equal files2.length, files.length
+    root.tree            (err, files2) -> assert.equal files2.length, files.length
 
 
 ## deletes directory tree
@@ -700,22 +697,15 @@ with_tmpdir (path) ->
     root.rmR() if root?.exists()
 
 with_tmpdir (path) ->
-  try
-    root = new Pathname(path)
-    root.join('bar'    ).touch()
-    root.join('boo'    ).mkdir()
-    root.join('boo/moo').touch()
+  root = new Pathname(path)
+  root.join('bar'    ).touch()
+  root.join('boo'    ).mkdir()
+  root.join('boo/moo').touch()
 
-    root.readdir (err, files) ->
-      assert.equal   files.length, 2
-      assert.include files, 'bar'
-      assert.include files, 'boo'
-  catch e
-    up(e)
-  finally
-    root.rmR() if root?.exists()
-
-
+  root.readdir (err, files) ->
+    assert.equal   files.length, 2
+    assert.include files, 'bar'
+    assert.include files, 'boo'
 
 ###
 
