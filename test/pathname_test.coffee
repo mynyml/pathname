@@ -744,5 +744,29 @@ with_tmpdir (path) ->
     assert.ifError(err)
     assert.ok root.join('foo/bar/baz').isDirectory()
 
+
+## test retrieves paths in same directory
+with_tmpdir (path) ->
+  root = new Pathname(path)
+  root.join('foo').mkdir()
+  root.join('bar').mkdir()
+  root.join('baz').mkdir()
+
+  assert.equal   root.join('foo').siblings().length, 2
+  assert.include root.join('foo').siblings(), root.join('bar').basename()
+  assert.include root.join('foo').siblings(), root.join('baz').basename()
+
+with_tmpdir (path) ->
+  root = new Pathname(path)
+  root.join('foo').mkdir()
+  root.join('bar').mkdir()
+  root.join('baz').mkdir()
+
+  root.join('foo').siblings (err, paths) ->
+    assert.equal   paths.length, 2
+    assert.include paths, root.join('bar').basename()
+    assert.include paths, root.join('baz').basename()
+
+
 ###
 

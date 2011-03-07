@@ -333,13 +333,27 @@ class Pathname
     elements.unshift('/') if @toString()[0] is '/'
     elements
 
-  children: (args...) -> @readdir(args...)
+  children: (args...) ->
+    @readdir(args...)
+
+  siblings: (cb) ->
+    if cb?
+      @parent().children (err, paths) =>
+        if err?
+          cb(err, null)
+        else
+          _paths = paths.filter (path) =>
+            path.toString() isnt @basename().toString()
+          cb(null, _paths)
+    else
+      @parent().children().filter (path) =>
+        path.toString() isnt @basename().toString()
 
 
   # TODO
-  # siblings
   # chdir
   # relativeFrom
+  # absolute
 
 module.exports = Pathname
 
