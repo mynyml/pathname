@@ -329,9 +329,10 @@ class Pathname
     elements.unshift('/') if @toString()[0] is '/'
     elements
 
+  children: (args...) -> @readdir(args...)
+
 
   # TODO
-  # children
   # siblings
   # chdir
   # relativeFrom
