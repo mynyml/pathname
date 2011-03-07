@@ -1,4 +1,4 @@
-core =
+mods =
   fs:   require('fs')
   path: require('path')
   util: require('util')
@@ -22,30 +22,30 @@ extractCallback = (args...) ->
 class Pathname
 
   constructor: (path) ->
-    @path = core.path.normalize(path.toString()).replace(/(.)\/$/,'$1')
+    @path = mods.path.normalize(path.toString()).replace(/(.)\/$/,'$1')
 
   # --------------------------------------------------
   # path functions
   # --------------------------------------------------
 
   join: (paths...) ->
-    new @constructor(core.path.join(@path, paths.map((path) -> path.toString())...))
+    new @constructor(mods.path.join(@path, paths.map((path) -> path.toString())...))
 
   dirname: ->
-    new @constructor(core.path.dirname(@path))
+    new @constructor(mods.path.dirname(@path))
 
   # FIXME return as string?
   basename: (ext) ->
-    new @constructor(core.path.basename(@path, ext))
+    new @constructor(mods.path.basename(@path, ext))
 
   extname: ->
-    core.path.extname(@path)
+    mods.path.extname(@path)
 
   exists: (cb) ->
     if cb?
-      core.path.exists(@path, cb)
+      mods.path.exists(@path, cb)
     else
-      core.path.existsSync(@path)
+      mods.path.existsSync(@path)
 
   # TODO
   # normalize
@@ -57,39 +57,39 @@ class Pathname
 
   stat: (cb) ->
     if cb?
-      core.fs.stat(@path, cb)
+      mods.fs.stat(@path, cb)
     else
-      core.fs.statSync(@path)
+      mods.fs.statSync(@path)
 
   lstat: (cb) ->
     if cb?
-      core.fs.lstat(@path, cb)
+      mods.fs.lstat(@path, cb)
     else
-      core.fs.lstatSync(@path)
+      mods.fs.lstatSync(@path)
 
   # TODO async version
   realpath: ->
-    new @constructor(core.fs.realpathSync(@path))
+    new @constructor(mods.fs.realpathSync(@path))
 
   unlink: (cb) ->
     if cb?
-      core.fs.unlink(@path, cb)
+      mods.fs.unlink(@path, cb)
     else
-      core.fs.unlinkSync(@path)
+      mods.fs.unlinkSync(@path)
 
   rmdir: (cb) ->
     if cb?
-      core.fs.rmdir(@path, cb)
+      mods.fs.rmdir(@path, cb)
     else
-      core.fs.rmdirSync(@path)
+      mods.fs.rmdirSync(@path)
 
   mkdir: (mode, cb) ->
     [cb, mode] = [mode, undefined] if mode?.constructor is Function
     mode ?= 0700
     if cb?
-      core.fs.mkdir @path, mode, (err) => cb(err, @)
+      mods.fs.mkdir @path, mode, (err) => cb(err, @)
     else
-      core.fs.mkdirSync(@path, mode)
+      mods.fs.mkdirSync(@path, mode)
       @
 
   # TODO mode defaults to 0666
@@ -100,25 +100,25 @@ class Pathname
       if @fd?
         process.nextTick(=> cb(null, @fd))
       else
-        core.fs.open @path, flags, mode, (err, @fd) =>
+        mods.fs.open @path, flags, mode, (err, @fd) =>
           try
             cb(err, @fd)
           finally
             @close()
     else
       return @fd if @fd?
-      @fd = core.fs.openSync(@path, flags, mode)
+      @fd = mods.fs.openSync(@path, flags, mode)
 
   close: (cb) ->
     if cb?
       if @fd?
-        core.fs.close @fd, (err) => cb(err, @)
+        mods.fs.close @fd, (err) => cb(err, @)
         delete @fd
       else
         cb(null, @)
     else
       if @fd?
-        core.fs.closeSync(@fd)
+        mods.fs.closeSync(@fd)
         delete @fd
         @
 
@@ -126,10 +126,10 @@ class Pathname
     [cb, path] = extractCallback(path, cb)
 
     if cb?
-      core.fs.rename @path, path.toString(), (err) =>
+      mods.fs.rename @path, path.toString(), (err) =>
         cb(err, new @constructor(path.toString()))
     else
-      core.fs.renameSync(@path, path.toString())
+      mods.fs.renameSync(@path, path.toString())
       new @constructor(path.toString())
 
   # TODO figure out "Bad file descriptor" error with fs.truncate()
@@ -141,75 +141,75 @@ class Pathname
         if err?
           cb(err)
         else
-          core.fs.truncate(fd, len, cb)
-          # core.fs.truncateSync(fd, len)
+          mods.fs.truncate(fd, len, cb)
+          # mods.fs.truncateSync(fd, len)
           # cb()
     else
-      core.fs.truncateSync(@open('r+', 0666), len)
+      mods.fs.truncateSync(@open('r+', 0666), len)
 
   chmod: (mode, cb) ->
     [cb, mode] = extractCallback(mode, cb)
 
     if cb?
-      core.fs.chmod(@path, mode, cb)
+      mods.fs.chmod(@path, mode, cb)
     else
-      core.fs.chmodSync(@path, mode)
+      mods.fs.chmodSync(@path, mode)
 
   readFile: (encoding, cb) ->
     [cb, encoding] = extractCallback(encoding, cb)
 
     if cb?
-      core.fs.readFile @path, encoding, cb
+      mods.fs.readFile @path, encoding, cb
     else
-      core.fs.readFileSync(@path, encoding)
+      mods.fs.readFileSync(@path, encoding)
 
   writeFile: (data, encoding, cb) ->
     [cb, data, encoding] = extractCallback(data, encoding, cb)
 
     if cb?
-      core.fs.writeFile @path, data, encoding, cb
+      mods.fs.writeFile @path, data, encoding, cb
     else
-      core.fs.writeFileSync(@path, data, encoding)
+      mods.fs.writeFileSync(@path, data, encoding)
 
   link: (dstpath, cb) ->
     [cb, dstpath] = extractCallback(dstpath, cb)
 
     if cb?
-      core.fs.link @path, dstpath.toString(), (err) => cb(err, @)
+      mods.fs.link @path, dstpath.toString(), (err) => cb(err, @)
     else
-      core.fs.linkSync(@path, dstpath.toString())
+      mods.fs.linkSync(@path, dstpath.toString())
       @
 
   symlink: (dstpath, cb) ->
     [cb, dstpath] = extractCallback(dstpath, cb)
 
     if cb?
-      core.fs.symlink @path, dstpath.toString(), (err) => cb(err, @)
+      mods.fs.symlink @path, dstpath.toString(), (err) => cb(err, @)
     else
-      core.fs.symlinkSync(@path, dstpath.toString())
+      mods.fs.symlinkSync(@path, dstpath.toString())
       @
 
   readlink: (cb) ->
     if cb?
-      core.fs.readlink @path, (err, path) => cb(err, new @constructor(path))
+      mods.fs.readlink @path, (err, path) => cb(err, new @constructor(path))
     else
-      new @constructor(core.fs.readlinkSync(@path))
+      new @constructor(mods.fs.readlinkSync(@path))
 
   readdir: (cb) ->
     if cb?
-      core.fs.readdir @path, (err, paths) =>
+      mods.fs.readdir @path, (err, paths) =>
         if err?
           cb(err, null)
         else
           cb(null, paths.map (path) => new @constructor(path))
     else
-      core.fs.readdirSync(@path).map (path) => new @constructor(path)
+      mods.fs.readdirSync(@path).map (path) => new @constructor(path)
 
   watchFile: (args...) ->
-    core.fs.watchFile(@path, args...)
+    mods.fs.watchFile(@path, args...)
 
   unwatchFile: ->
-    core.fs.unwatchFile(@path)
+    mods.fs.unwatchFile(@path)
 
   # --------------------------------------------------
   # fs.Stats functions
@@ -268,7 +268,7 @@ class Pathname
     # FIXME i are teh uglie
     if cb?
       if not @isSymbolicLink() and @isDirectory() and (!depth? or depth > 0)
-        core.fs.readdir @path, (err, files) =>
+        mods.fs.readdir @path, (err, files) =>
           return if done
           if err?
             done = yes
@@ -289,7 +289,7 @@ class Pathname
 
     else
       if not @isSymbolicLink() and @isDirectory() and (!depth? or depth > 0)
-        core.fs.readdirSync(@path).forEach (fname) => paths.push(@join(fname).tree(depth and (depth - 1)))
+        mods.fs.readdirSync(@path).forEach (fname) => paths.push(@join(fname).tree(depth and (depth - 1)))
 
       flatten(paths)
 

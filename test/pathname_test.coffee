@@ -1,12 +1,12 @@
-core =
+mods =
   fs:   require('fs')
   sys:  require('sys')
   path: require('path')
   util: require('util')
 
 
-global.puts    = core.sys.puts
-global.inspect = core.util.inspect
+global.puts    = mods.sys.puts
+global.inspect = mods.util.inspect
 global.l       = console.log
 global.d       = (x) -> console.log("DEBUG: " + inspect x)
 
@@ -36,11 +36,11 @@ assert.include = (enumerable, value, message) ->
   assert.ok((enumerable.some (item) -> _.isEqual(item, value)), message)
 
 assert.closed = (fd) ->
-  assert.throws (-> core.fs.readSync(fd, new Buffer(1), 0, 1, 0)), Error, "fd '#{fd}' is open, expected it to be closed"
-  # core.fs.fstatSync(fd)
+  assert.throws (-> mods.fs.readSync(fd, new Buffer(1), 0, 1, 0)), Error, "fd '#{fd}' is open, expected it to be closed"
+  # mods.fs.fstatSync(fd)
 
 assert.open = (fd) ->
-  assert.doesNotThrow (-> core.fs.readSync(fd, new Buffer(1), 0, 1, 0)), Error, "fd '#{fd}' is closed, expected it to be open"
+  assert.doesNotThrow (-> mods.fs.readSync(fd, new Buffer(1), 0, 1, 0)), Error, "fd '#{fd}' is closed, expected it to be open"
 
 assert.match = (actual, expected) ->
   assert.ok expected.test(actual), "Expected #{expected} to match #{actual}"
@@ -131,12 +131,12 @@ with_tmpdir (path) ->
 
 ## test queries stats
 with_tmpdir (path) ->
-  assert.equal new Pathname(path).stat().ino, core.fs.statSync(path).ino
+  assert.equal new Pathname(path).stat().ino, mods.fs.statSync(path).ino
 
 with_tmpdir (path) ->
   new Pathname(path).stat (err, info) ->
     assert.ifError(err)
-    assert.equal info.ino, core.fs.statSync(path).ino
+    assert.equal info.ino, mods.fs.statSync(path).ino
 
 
 ## test expands path
@@ -191,7 +191,7 @@ process.nextTick ->
     assert.ok path.isDirectory()
     # assert.equal path.statSync().mode, 0700 #TODO
   finally
-    core.fs.rmdirSync(path.toString()) if path?
+    mods.fs.rmdirSync(path.toString()) if path?
 
 new Pathname(temp.path()).mkdir undefined, (err, path) ->
   try
@@ -200,7 +200,7 @@ new Pathname(temp.path()).mkdir undefined, (err, path) ->
     assert.ok path.isDirectory()
     # assert.equal path.statSync().mode, 0700 #TODO
   finally
-    core.fs.rmdirSync(path.toString()) if path?
+    mods.fs.rmdirSync(path.toString()) if path?
 
 new Pathname(temp.path()).mkdir (err, path) ->
   try
@@ -209,40 +209,40 @@ new Pathname(temp.path()).mkdir (err, path) ->
     assert.ok path.isDirectory()
     # assert.equal path.statSync().mode, 0700 #TODO
   finally
-    core.fs.rmdirSync(path.toString()) if path?
+    mods.fs.rmdirSync(path.toString()) if path?
 
 
 ## test opens file (sync)
 # TODO test reuses fd
 with_tmpfile (path, fd) ->
   try
-    core.fs.writeFileSync(path, 'foo')
-    core.fs.closeSync(fd)
+    mods.fs.writeFileSync(path, 'foo')
+    mods.fs.closeSync(fd)
 
     _fd = new Pathname(path).open('r', 0666)
     buffer = new Buffer(3)
-    core.fs.readSync(_fd, buffer, 0, 3, 0)
+    mods.fs.readSync(_fd, buffer, 0, 3, 0)
     assert.equal buffer.toString(), 'foo'
 
     _fd = new Pathname(path).open('r')
     buffer = new Buffer(3)
-    core.fs.readSync(_fd, buffer, 0, 3, 0)
+    mods.fs.readSync(_fd, buffer, 0, 3, 0)
     assert.equal buffer.toString(), 'foo'
 
   finally
-    core.fs.close(fd)
+    mods.fs.close(fd)
 
 
 ## test opens file (async)
 # TODO test reuses fd
 with_tmpfile (path, fd) ->
-  core.fs.writeFileSync(path, 'foo')
-  core.fs.closeSync(fd)
+  mods.fs.writeFileSync(path, 'foo')
+  mods.fs.closeSync(fd)
 
   new Pathname(path).open 'r', 0666, (err, _fd) ->
     assert.ifError(err)
     buffer = new Buffer(3)
-    core.fs.readSync(_fd, buffer, 0, 3, 0)
+    mods.fs.readSync(_fd, buffer, 0, 3, 0)
     assert.equal buffer.toString(), 'foo'
     process.on 'exit', ->
       assert.closed(_fd)
@@ -250,7 +250,7 @@ with_tmpfile (path, fd) ->
   new Pathname(path).open 'r', (err, _fd) ->
     assert.ifError(err)
     buffer = new Buffer(3)
-    core.fs.readSync(_fd, buffer, 0, 3, 0)
+    mods.fs.readSync(_fd, buffer, 0, 3, 0)
     assert.equal buffer.toString(), 'foo'
     process.on 'exit', ->
       assert.closed(_fd)
@@ -361,14 +361,14 @@ with_tmpdir (dir) ->
 
 ## test reads from a file
 with_tmpfile (path) ->
-  core.fs.writeFileSync(path, 'foo')
+  mods.fs.writeFileSync(path, 'foo')
 
   path = new Pathname(path)
   assert.equal path.readFile().constructor, Buffer
   assert.equal path.readFile().toString(), 'foo'
 
 with_tmpfile (path) ->
-  core.fs.writeFileSync(path, 'foo')
+  mods.fs.writeFileSync(path, 'foo')
 
   path = new Pathname(path)
   path.readFile (err, data) ->
@@ -542,21 +542,21 @@ process.nextTick ->
     assert.ok path.exists()
     assert.ok path.isFile()
   finally
-    core.fs.unlinkSync(path.toString()) if path?
+    mods.fs.unlinkSync(path.toString()) if path?
 
 new Pathname(temp.path()).touch (err, path) ->
   try
     assert.ok path.exists()
     assert.ok path.isFile()
   finally
-    core.fs.unlinkSync(path.toString()) if path?
+    mods.fs.unlinkSync(path.toString()) if path?
 
 process.nextTick ->
   try
     path = new Pathname(temp.path()).touch(0744)
     assert.ok(path.stat().mode.toString(8) is '100744')
   finally
-    core.fs.unlinkSync(path.toString()) if path?
+    mods.fs.unlinkSync(path.toString()) if path?
 
 
 ## test traverses directory tree recursively
