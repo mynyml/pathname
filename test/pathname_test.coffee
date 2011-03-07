@@ -723,5 +723,22 @@ with_tmpdir (path) ->
     assert.include files, 'bar'
     assert.include files, 'boo'
 
+
+## test creates many levels of directories
+with_tmpdir (path) ->
+  root = new Pathname(path)
+  assert.ok not root.join('foo').isDirectory()
+
+  root.join('foo/bar/baz').mkdirP()
+  assert.ok root.join('foo/bar/baz').isDirectory()
+
+with_tmpdir (path) ->
+  root = new Pathname(path)
+  assert.ok not root.join('foo').isDirectory()
+
+  root.join('foo/bar/baz').mkdirP (err) ->
+    assert.ifError(err)
+    assert.ok root.join('foo/bar/baz').isDirectory()
+
 ###
 

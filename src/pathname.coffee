@@ -22,14 +22,14 @@ extractCallback = (args...) ->
 class Pathname
 
   constructor: (path) ->
-    @path = core.path.normalize(path.toString()).replace(/\/$/,'')
+    @path = core.path.normalize(path.toString()).replace(/(.)\/$/,'$1')
 
   # --------------------------------------------------
   # path functions
   # --------------------------------------------------
 
   join: (paths...) ->
-    new @constructor(core.path.join(@path, paths...))
+    new @constructor(core.path.join(@path, paths.map((path) -> path.toString())...))
 
   dirname: ->
     new @constructor(core.path.dirname(@path))
@@ -45,8 +45,7 @@ class Pathname
     if cb?
       core.path.exists(@path, cb)
     else
-      try @stat(@path); yes
-      catch e then      no
+      core.path.existsSync(@path)
 
   # TODO
   # normalize
@@ -308,10 +307,30 @@ class Pathname
         if path.isFile()         then path.unlink()
         if path.isDirectory()    then path.rmdir()
 
+  mkdirP: (cb) ->
+    create = =>
+      @traverse((path) -> path.mkdir() unless path.exists())
+
+    if cb?
+      process.nextTick =>
+        try
+          create() #sync, to garantee order
+          cb(null)
+        catch e
+          cb(e)
+    else
+      create()
+
+  traverse: (cb) ->
+    cb(@components().map((path) -> new Pathname(path)).reduce((curr, next) -> cb(curr); curr.join(next)))
+
+  components: ->
+    elements = @toString().split('/').filter (e) -> e.length isnt 0
+    elements.unshift('/') if @toString()[0] is '/'
+    elements
+
+
   # TODO
-  # tree    (async)
-  # rmR     (async)
-  # mkdirP
   # children
   # siblings
   # chdir
