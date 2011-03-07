@@ -15,8 +15,8 @@ assert   = require('assert')
 temp     = require('temp')
 Pathname = require('../src/index')
 
-process._events = {}
-process.setMaxListeners(50)
+process._events ?= {}
+process.setMaxListeners(60)
 
 # --------------------------------------------------
 # Helpers
@@ -443,14 +443,16 @@ with_tmpdir (path) ->
   path1 = new Pathname(path).join('foo')
   path2 = new Pathname(path).join('bar').touch().symlink(path1)
 
-  assert.equal path1.readlink(), path2.toString()
+  assert.equal path1.readlink().constructor, Pathname
+  assert.equal path1.readlink().toString(), path2.toString()
 
 with_tmpdir (path) ->
   path1 = new Pathname(path).join('foo')
   path2 = new Pathname(path).join('bar').touch().symlink(path1)
 
   path1.readlink (err, resolvedPath) ->
-    assert.equal resolvedPath, path2.toString()
+    assert.equal resolvedPath.constructor, Pathname
+    assert.equal resolvedPath.toString(), path2.toString()
 
 
 ## test watches and unwatches a file
@@ -566,7 +568,7 @@ with_tmpdir (path) ->
     root.join('boo/moo'    ).mkdir()
     root.join('boo/moo/zoo').touch()
 
-    assert.ok root.tree().every (path) -> path.constructor == Pathname
+    assert.ok root.tree().every (path) -> path.constructor is Pathname
 
     tree = root.tree(0)
     assert.equal   tree.length, 1
@@ -615,7 +617,7 @@ with_tmpdir (path) ->
 
   root.tree (err, files) ->
     assert.ifError(err)
-    assert.ok files.every (path) -> path.constructor == Pathname
+    assert.ok files.every (path) -> path.constructor is Pathname
 
   root.tree 0, (err, files) ->
     assert.ifError(err)
@@ -704,9 +706,10 @@ with_tmpdir (path) ->
     root.join('boo'    ).mkdir()
     root.join('boo/moo').touch()
 
+    assert.ok      root.readdir().every (path) -> path.constructor is Pathname
     assert.equal   root.readdir().length, 2
-    assert.include root.readdir(), 'bar'
-    assert.include root.readdir(), 'boo'
+    assert.include root.readdir(), root.join('bar').basename()
+    assert.include root.readdir(), root.join('boo').basename()
   catch e
     up(e)
   finally
@@ -719,9 +722,10 @@ with_tmpdir (path) ->
   root.join('boo/moo').touch()
 
   root.readdir (err, files) ->
+    assert.ok      files.every (path) -> path.constructor is Pathname
     assert.equal   files.length, 2
-    assert.include files, 'bar'
-    assert.include files, 'boo'
+    assert.include files, root.join('bar').basename()
+    assert.include files, root.join('boo').basename()
 
 
 ## test creates many levels of directories

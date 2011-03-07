@@ -191,15 +191,19 @@ class Pathname
 
   readlink: (cb) ->
     if cb?
-      core.fs.readlink(@path, cb)
+      core.fs.readlink @path, (err, path) => cb(err, new @constructor(path))
     else
-      core.fs.readlinkSync(@path)
+      new @constructor(core.fs.readlinkSync(@path))
 
   readdir: (cb) ->
     if cb?
-      core.fs.readdir(@path, cb)
+      core.fs.readdir @path, (err, paths) =>
+        if err?
+          cb(err, null)
+        else
+          cb(null, paths.map (path) => new @constructor(path))
     else
-      core.fs.readdirSync(@path)
+      core.fs.readdirSync(@path).map (path) => new @constructor(path)
 
   watchFile: (args...) ->
     core.fs.watchFile(@path, args...)
@@ -322,7 +326,7 @@ class Pathname
       create()
 
   traverse: (cb) ->
-    cb(@components().map((path) -> new Pathname(path)).reduce((curr, next) -> cb(curr); curr.join(next)))
+    cb(@components().map((path) => new @constructor(path)).reduce((curr, next) -> cb(curr); curr.join(next)))
 
   components: ->
     elements = @toString().split('/').filter (e) -> e.length isnt 0
