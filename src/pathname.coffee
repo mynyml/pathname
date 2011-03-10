@@ -314,7 +314,6 @@ class Pathname
         if path.isFile()         then path.unlink()
         if path.isDirectory()    then path.rmdir()
 
-  # TODO return new path as Pathname
   mkdirP: (cb) ->
     create = =>
       @traverse((path) -> path.mkdir() unless path.exists())
@@ -322,10 +321,11 @@ class Pathname
     if cb?
       process.nextTick =>
         try
-          create() #sync, to garantee order
-          cb(null)
+          #create sync, to garantee order
+          p = create()
         catch e
-          cb(e)
+          cb(e, null)
+        cb(null, p)
     else
       create()
 

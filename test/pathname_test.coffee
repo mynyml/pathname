@@ -743,16 +743,22 @@ with_tmpdir (path) ->
   root = new Pathname(path)
   assert.ok not root.join('foo').isDirectory()
 
-  root.join('foo/bar/baz').mkdirP()
+  newpath = root.join('foo/bar/baz').mkdirP()
   assert.ok root.join('foo/bar/baz').isDirectory()
+
+  assert.equal newpath.constructor, Pathname
+  assert.equal newpath.toString(), root.join('foo/bar/baz').toString()
 
 with_tmpdir (path) ->
   root = new Pathname(path)
   assert.ok not root.join('foo').isDirectory()
 
-  root.join('foo/bar/baz').mkdirP (err) ->
+  root.join('foo/bar/baz').mkdirP (err, createdPath) ->
     assert.ifError(err)
     assert.ok root.join('foo/bar/baz').isDirectory()
+
+    assert.equal createdPath.constructor, Pathname
+    assert.equal createdPath.toString(), root.join('foo/bar/baz').toString()
 
 
 ## test retrieves paths in same directory
