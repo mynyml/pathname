@@ -700,9 +700,11 @@ with_tmpdir (path) ->
     regexp = new RegExp("^#{RegExp.escape(temp.dir)}")
     assert.match root.realpath().toString(), regexp
 
-    root.rmR()
+    removedPath = root.rmR()
 
     assert.ok(not root.join('boo').exists())
+    assert.equal removedPath.constructor, Pathname
+    assert.equal removedPath.toString(), root.toString()
   catch e
     up(e)
   finally
@@ -726,9 +728,12 @@ with_tmpdir (path) ->
   assert.match root.realpath().toString(), regexp
 
   assert.throws (-> root.rmdir()), /ENOTEMPTY/
-  root.rmR (err) ->
+  root.rmR (err, removedPath) ->
     assert.ifError(err)
     assert.ok(not root.join('boo').exists())
+
+    assert.equal removedPath.constructor, Pathname
+    assert.equal removedPath.toString(), root.toString()
 
 
 ## test reads directory contents

@@ -269,13 +269,13 @@ class Pathname
       @open('w+', mode); @close()
 
   # FIXME async version not so async
+  # FIXME i are teh uglie
   tree: (depth, cb) ->
     [cb, depth] = extractCallback(depth, cb)
 
     done  = no
     paths = [@]
 
-    # FIXME i are teh uglie
     if cb?
       if not @isSymbolicLink() and @isDirectory() and (!depth? or depth > 0)
         mods.fs.readdir @path, (err, files) =>
@@ -306,20 +306,21 @@ class Pathname
   # FIXME async version not so async
   rmR: (cb) ->
     if cb?
-      @tree (err, files) ->
+      @tree (err, files) =>
         if err?
-          cb(err)
+          cb(err, null)
         else
           files.reverse().forEach (path) ->
             if path.isSymbolicLink() then path.unlink()
             if path.isFile()         then path.unlink()
             if path.isDirectory()    then path.rmdir()
-          cb(null)
+          cb(null, @)
     else
       @tree().reverse().forEach (path) ->
         if path.isSymbolicLink() then path.unlink()
         if path.isFile()         then path.unlink()
         if path.isDirectory()    then path.rmdir()
+      @
 
   mkdirP: (cb) ->
     create = =>
