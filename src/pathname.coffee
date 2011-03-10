@@ -18,7 +18,6 @@ extractCallback = (args...) ->
 
 # --------------------------------------------------
 
-# TODO return @ when possible
 class Pathname
 
   constructor: (path) ->

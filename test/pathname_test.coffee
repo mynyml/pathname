@@ -412,6 +412,7 @@ with_tmpfile (path) ->
 
   assert.equal path.readFile().toString(), 'foo'
   assert.equal writtenPath.constructor, Pathname
+  assert.equal writtenPath.toString(), path.toString()
 
 with_tmpfile (path) ->
   path = new Pathname(path)
@@ -420,6 +421,7 @@ with_tmpfile (path) ->
     assert.ifError(err)
     assert.equal path.readFile().toString(), 'foo'
     assert.equal writtenPath.constructor, Pathname
+    assert.equal writtenPath.toString(), path.toString()
 
 
 ## test creates hard link
@@ -495,8 +497,10 @@ with_tmpfile (path) ->
     called = yes
     unwatchedPath = path.unwatchFile()
     assert.equal unwatchedPath.constructor, Pathname
+    assert.equal unwatchedPath.toString(), path.toString()
 
   assert.equal watchedPath.constructor, Pathname
+  assert.equal watchedPath.toString(), path.toString()
 
   path.writeFile('foo')
   setTimeout((->
