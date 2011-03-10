@@ -195,7 +195,7 @@ process.nextTick ->
     path = new Pathname(temp.path()).mkdir()
     assert.ok path.exists()
     assert.ok path.isDirectory()
-    # assert.equal path.statSync().mode, 0700 #TODO
+    assert.equal path.stat().mode.toString(8), '40700'
   finally
     mods.fs.rmdirSync(path.toString()) if path?
 
@@ -204,7 +204,9 @@ new Pathname(temp.path()).mkdir undefined, (err, path) ->
     assert.ifError(err)
     assert.ok path.exists()
     assert.ok path.isDirectory()
-    # assert.equal path.statSync().mode, 0700 #TODO
+    assert.equal path.stat().mode.toString(8), '40700'
+  catch e
+    up(e)
   finally
     mods.fs.rmdirSync(path.toString()) if path?
 
@@ -213,7 +215,9 @@ new Pathname(temp.path()).mkdir (err, path) ->
     assert.ifError(err)
     assert.ok path.exists()
     assert.ok path.isDirectory()
-    # assert.equal path.statSync().mode, 0700 #TODO
+    assert.equal path.stat().mode.toString(8), '40700'
+  catch e
+    up(e)
   finally
     mods.fs.rmdirSync(path.toString()) if path?
 
@@ -352,17 +356,17 @@ with_tmpfile (path) ->
 with_tmpdir (dir) ->
   path = new Pathname(dir).join('foo')
   path.open 'w+', 0644, (err, fd) ->
-    assert.ok(path.stat().mode.toString(8) is '100644')
+    assert.equal path.stat().mode.toString(8), '100644'
     path.chmod(0622)
-    assert.ok(path.stat().mode.toString(8) is '100622')
+    assert.equal path.stat().mode.toString(8), '100622'
 
 with_tmpdir (dir) ->
   path = new Pathname(dir).join('bar')
   path.open 'w+', 0644, (err, fd) ->
-    assert.ok(path.stat().mode.toString(8) is '100644')
+    assert.equal path.stat().mode.toString(8), '100644'
     path.chmod 0622, (err) ->
       assert.ifError(err)
-      assert.ok(path.stat().mode.toString(8) is '100622')
+      assert.equal path.stat().mode.toString(8), '100622'
 
 
 ## test reads from a file
@@ -560,7 +564,7 @@ new Pathname(temp.path()).touch (err, path) ->
 process.nextTick ->
   try
     path = new Pathname(temp.path()).touch(0744)
-    assert.ok(path.stat().mode.toString(8) is '100744')
+    assert.equal path.stat().mode.toString(8), '100744'
   finally
     mods.fs.unlinkSync(path.toString()) if path?
 

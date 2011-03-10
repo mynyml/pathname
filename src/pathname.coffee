@@ -86,8 +86,9 @@ class Pathname
       mods.fs.rmdirSync(@path)
 
   mkdir: (mode, cb) ->
-    [cb, mode] = [mode, undefined] if mode?.constructor is Function
+    [cb, mode] = extractCallback(mode, cb)
     mode ?= 0700
+
     if cb?
       mods.fs.mkdir @path, mode, (err) => cb(err, @)
     else
