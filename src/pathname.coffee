@@ -62,9 +62,16 @@ class Pathname
     else
       mods.fs.lstatSync(@path)
 
-  # TODO async version
-  realpath: ->
-    new @constructor(mods.fs.realpathSync(@path))
+  realpath: (cb) ->
+    if cb?
+      mods.fs.realpath @path, (err, resolvedPath) =>
+        d 'here'
+        if err?
+          cb(err, null)
+        else
+          cb(null, new @constructor(resolvedPath))
+    else
+      new @constructor(mods.fs.realpathSync(@path))
 
   unlink: (cb) ->
     if cb?

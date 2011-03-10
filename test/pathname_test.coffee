@@ -144,7 +144,6 @@ with_tmpdir (path) ->
 
 
 ## test expands path
-# FIXME
 with_tmpdir (path) ->
   root = new Pathname(path)
   root.join('foo').touch()
@@ -152,6 +151,7 @@ with_tmpdir (path) ->
   cwd = process.cwd()
   try
     process.chdir(path)
+    assert.equal new Pathname('foo').realpath().constructor, Pathname
     assert.equal new Pathname('foo').realpath().toString(), root.join('foo').toString()
   catch e
     up(e)
