@@ -369,16 +369,22 @@ with_tmpdir (dir) ->
   path = new Pathname(dir).join('foo')
   path.open 'w+', 0644, (err, fd) ->
     assert.equal path.stat().mode.toString(8), '100644'
-    path.chmod(0622)
+    chmodedPath = path.chmod(0622)
     assert.equal path.stat().mode.toString(8), '100622'
+
+    assert.equal chmodedPath.constructor, Pathname
+    assert.equal chmodedPath.toString(), path.toString()
 
 with_tmpdir (dir) ->
   path = new Pathname(dir).join('bar')
   path.open 'w+', 0644, (err, fd) ->
     assert.equal path.stat().mode.toString(8), '100644'
-    path.chmod 0622, (err) ->
+    path.chmod 0622, (err, chmodedPath) ->
       assert.ifError(err)
       assert.equal path.stat().mode.toString(8), '100622'
+
+      assert.equal chmodedPath.constructor, Pathname
+      assert.equal chmodedPath.toString(), path.toString()
 
 
 ## test reads from a file

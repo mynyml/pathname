@@ -138,6 +138,7 @@ class Pathname
       new @constructor(path.toString())
 
   # TODO figure out "Bad file descriptor" error with fs.truncate()
+  # TODO return Pathname obj
   truncate: (len, cb) ->
     [cb, len] = extractCallback(len, cb)
 
@@ -156,9 +157,10 @@ class Pathname
     [cb, mode] = extractCallback(mode, cb)
 
     if cb?
-      mods.fs.chmod(@path, mode, cb)
+      mods.fs.chmod @path, mode, (err) => cb(err, @)
     else
       mods.fs.chmodSync(@path, mode)
+      @
 
   readFile: (encoding, cb) ->
     [cb, encoding] = extractCallback(encoding, cb)
