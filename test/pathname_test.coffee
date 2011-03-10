@@ -408,16 +408,18 @@ with_tmpfile (path) ->
 ## test writes to a file
 with_tmpfile (path) ->
   path = new Pathname(path)
-  path.writeFile('foo')
+  writtenPath = path.writeFile('foo')
 
   assert.equal path.readFile().toString(), 'foo'
+  assert.equal writtenPath.constructor, Pathname
 
 with_tmpfile (path) ->
   path = new Pathname(path)
 
-  path.writeFile 'foo', (err) ->
+  path.writeFile 'foo', (err, writtenPath) ->
     assert.ifError(err)
     assert.equal path.readFile().toString(), 'foo'
+    assert.equal writtenPath.constructor, Pathname
 
 
 ## test creates hard link

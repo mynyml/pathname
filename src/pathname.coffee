@@ -174,9 +174,10 @@ class Pathname
     [cb, data, encoding] = extractCallback(data, encoding, cb)
 
     if cb?
-      mods.fs.writeFile @path, data, encoding, cb
+      mods.fs.writeFile @path, data, encoding, (err) => cb(err, @)
     else
       mods.fs.writeFileSync(@path, data, encoding)
+      @
 
   link: (dstpath, cb) ->
     [cb, dstpath] = extractCallback(dstpath, cb)
