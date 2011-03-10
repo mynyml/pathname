@@ -306,6 +306,7 @@ class Pathname
         if path.isFile()         then path.unlink()
         if path.isDirectory()    then path.rmdir()
 
+  # TODO return new path as Pathname
   mkdirP: (cb) ->
     create = =>
       @traverse((path) -> path.mkdir() unless path.exists())
@@ -344,9 +345,6 @@ class Pathname
       @parent().children().filter (path) =>
         path.toString() isnt @basename().toString()
 
-  # TODO
-  # absolute
-  # relativeFrom
 
 module.exports = Pathname
 

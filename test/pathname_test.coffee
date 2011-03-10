@@ -145,16 +145,18 @@ with_tmpdir (path) ->
 
 ## test expands path
 # FIXME
-#with_tmpdir (path) ->
-#  cwd = process.cwd()
-#  try
-#    process.chdir(path)
-#    base =           new Pathname(path).basename()
-#    assert.deepEqual new Pathname(base).realpathSync(), new Pathname(path)
-#  catch e
-#    puts inspect("Expection: #{e}")
-#  finally
-#    process.chdir(cwd)
+with_tmpdir (path) ->
+  root = new Pathname(path)
+  root.join('foo').touch()
+
+  cwd = process.cwd()
+  try
+    process.chdir(path)
+    assert.equal new Pathname('foo').realpath().toString(), root.join('foo').toString()
+  catch e
+    up(e)
+  finally
+    process.chdir(cwd)
 
 
 ## test removes a file
