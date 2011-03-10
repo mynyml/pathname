@@ -75,9 +75,10 @@ class Pathname
 
   unlink: (cb) ->
     if cb?
-      mods.fs.unlink(@path, cb)
+      mods.fs.unlink @path, (err) => cb(err, @)
     else
       mods.fs.unlinkSync(@path)
+      @
 
   rmdir: (cb) ->
     if cb?

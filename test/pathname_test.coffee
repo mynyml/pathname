@@ -162,17 +162,22 @@ with_tmpdir (path) ->
 ## test removes a file
 with_tmpfile (path) ->
   path = new Pathname(path)
-  path.unlink (err) ->
+  path.unlink (err, unlinkedPath) ->
     assert.ifError(err)
     assert.ok not path.exists()
     assert.ok not path.isFile()
 
+    assert.equal unlinkedPath.constructor, Pathname
+    assert.equal unlinkedPath.toString(), path.toString()
+
 with_tmpfile (path) ->
   path = new Pathname(path)
-  path.unlink()
+  unlinkedPath = path.unlink()
   assert.ok not path.exists()
   assert.ok not path.isFile()
 
+  assert.equal unlinkedPath.constructor, Pathname
+  assert.equal unlinkedPath.toString(), path.toString()
 
 ## test removes empty directory
 with_tmpdir (path) ->
