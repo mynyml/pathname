@@ -34,7 +34,6 @@ class Pathname
   dirname: ->
     new @constructor(mods.path.dirname(@path))
 
-  # FIXME return as string?
   basename: (ext) ->
     new @constructor(mods.path.basename(@path, ext))
 
@@ -46,10 +45,6 @@ class Pathname
       mods.path.exists(@path, cb)
     else
       mods.path.existsSync(@path)
-
-  # TODO
-  # normalize
-  # resolve (?)
 
   # --------------------------------------------------
   # fs functions
@@ -258,7 +253,7 @@ class Pathname
     else
       @open('w+', mode); @close()
 
-  # TODO async version not so async
+  # FIXME async version not so async
   tree: (depth, cb) ->
     [cb, depth] = extractCallback(depth, cb)
 
@@ -293,7 +288,7 @@ class Pathname
 
       flatten(paths)
 
-  # TODO async version not so async
+  # FIXME async version not so async
   rmR: (cb) ->
     if cb?
       @tree (err, files) ->
@@ -329,8 +324,8 @@ class Pathname
     cb(@components().map((path) => new @constructor(path)).reduce((curr, next) -> cb(curr); curr.join(next)))
 
   components: ->
-    elements = @toString().split('/').filter (e) -> e.length isnt 0
-    elements.unshift('/') if @toString()[0] is '/'
+    elements = @path.split('/').filter (e) -> e.length isnt 0
+    elements.unshift('/') if @path[0] is '/'
     elements
 
   children: (args...) ->
@@ -349,11 +344,9 @@ class Pathname
       @parent().children().filter (path) =>
         path.toString() isnt @basename().toString()
 
-
   # TODO
-  # chdir
-  # relativeFrom
   # absolute
+  # relativeFrom
 
 module.exports = Pathname
 
