@@ -21,10 +21,14 @@ process.setMaxListeners(60)
 # --------------------------------------------------
 # Helpers
 # --------------------------------------------------
-with_tmpdir = (cb) ->
-  temp.mkdir "Pathname-", (err, dirPath) ->
-    assert.ifError(err)
-    cb(dirPath)
+with_tmpdir = with_tmpdirs = (cb) ->
+  paths = []
+  count = cb.length
+  for i in [1..count]
+    temp.mkdir "Pathname-", (err, dirPath) ->
+      assert.ifError(err)
+      paths.push(dirPath)
+      cb(paths...) if --count is 0
 
 with_tmpfile = (cb) ->
   temp.open "Pathname-", (err, info) ->
