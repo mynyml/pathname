@@ -490,10 +490,13 @@ with_tmpfile (path) ->
   called = no
 
   path = new Pathname(path)
-  path.watchFile {}, (curr, prev) ->
+  watchedPath = path.watchFile {}, (curr, prev) ->
     assert.ok curr.mtime >= prev.mtime
     called = yes
-    path.unwatchFile()
+    unwatchedPath = path.unwatchFile()
+    assert.equal unwatchedPath.constructor, Pathname
+
+  assert.equal watchedPath.constructor, Pathname
 
   path.writeFile('foo')
   setTimeout((->

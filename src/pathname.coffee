@@ -215,9 +215,11 @@ class Pathname
 
   watchFile: (args...) ->
     mods.fs.watchFile(@path, args...)
+    @
 
   unwatchFile: ->
     mods.fs.unwatchFile(@path)
+    @
 
   # --------------------------------------------------
   # fs.Stats functions
