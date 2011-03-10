@@ -179,19 +179,26 @@ with_tmpfile (path) ->
   assert.equal unlinkedPath.constructor, Pathname
   assert.equal unlinkedPath.toString(), path.toString()
 
+
 ## test removes empty directory
 with_tmpdir (path) ->
   path = new Pathname(path)
-  path.rmdir (err) ->
+  path.rmdir (err, unlinkedPath) ->
     assert.ifError(err)
     assert.ok not path.exists()
     assert.ok not path.isDirectory()
 
+    assert.equal unlinkedPath.constructor, Pathname
+    assert.equal unlinkedPath.toString(), path.toString()
+
 with_tmpdir (path) ->
   path = new Pathname(path)
-  path.rmdir()
+  unlinkedPath = path.rmdir()
   assert.ok not path.exists()
   assert.ok not path.isDirectory()
+
+  assert.equal unlinkedPath.constructor, Pathname
+  assert.equal unlinkedPath.toString(), path.toString()
 
 
 ## test creates directory

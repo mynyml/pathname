@@ -82,9 +82,10 @@ class Pathname
 
   rmdir: (cb) ->
     if cb?
-      mods.fs.rmdir(@path, cb)
+      mods.fs.rmdir @path, (err) => cb(err, @)
     else
       mods.fs.rmdirSync(@path)
+      @
 
   mkdir: (mode, cb) ->
     [cb, mode] = extractCallback(mode, cb)
