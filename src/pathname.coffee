@@ -95,9 +95,9 @@ class Pathname
       mods.fs.mkdirSync(@path, mode)
       @
 
-  # TODO mode defaults to 0666
   open: (flags, mode, cb) ->
     [cb, flags, mode] = extractCallback(flags, mode, cb)
+    mode ?= 0666
 
     if cb?
       if @fd?
