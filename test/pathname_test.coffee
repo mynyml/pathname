@@ -266,16 +266,12 @@ with_tmpfile (path, fd) ->
     buffer = new Buffer(3)
     mods.fs.readSync(_fd, buffer, 0, 3, 0)
     assert.equal buffer.toString(), 'foo'
-    process.on 'exit', ->
-      assert.closed(_fd)
 
   new Pathname(path).open 'r', (err, _fd) ->
     assert.ifError(err)
     buffer = new Buffer(3)
     mods.fs.readSync(_fd, buffer, 0, 3, 0)
     assert.equal buffer.toString(), 'foo'
-    process.on 'exit', ->
-      assert.closed(_fd)
 
 
 ## test closes a file
@@ -355,13 +351,13 @@ with_tmpfile (path) ->
 
   assert.equal path.readFile().toString(), 'foo'
 
-# with_tmpfile (path) ->
-#   path = new Pathname(path)
-#
-#   path.writeFile('foobar')
-#   path.truncate 3, (err) ->
-#     assert.ifError(err)
-#     assert.equal path.readFile().toString(), 'foo'
+with_tmpfile (path) ->
+  path = new Pathname(path)
+
+  path.writeFile('foobar')
+  path.truncate 3, (err) ->
+    assert.ifError(err)
+    assert.equal path.readFile().toString(), 'foo'
 
 
 ## test changes file mode

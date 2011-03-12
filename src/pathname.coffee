@@ -64,7 +64,6 @@ class Pathname
   realpath: (cb) ->
     if cb?
       mods.fs.realpath @path, (err, resolvedPath) =>
-        d 'here'
         if err?
           cb(err, null)
         else
@@ -104,11 +103,7 @@ class Pathname
       if @fd?
         process.nextTick(=> cb(null, @fd))
       else
-        mods.fs.open @path, flags, mode, (err, @fd) =>
-          try
-            cb(err, @fd)
-          finally
-            @close()
+        mods.fs.open @path, flags, mode, (err, @fd) => cb(err, @fd)
     else
       return @fd if @fd?
       @fd = mods.fs.openSync(@path, flags, mode)
