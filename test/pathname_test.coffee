@@ -347,17 +347,23 @@ with_tmpfile (path) ->
   path = new Pathname(path)
 
   path.writeFile('foobar')
-  path.truncate(3)
+  truncatedPath = path.truncate(3)
 
   assert.equal path.readFile().toString(), 'foo'
+
+  assert.equal truncatedPath.constructor, Pathname
+  assert.equal truncatedPath.toString(), path.toString()
 
 with_tmpfile (path) ->
   path = new Pathname(path)
 
   path.writeFile('foobar')
-  path.truncate 3, (err) ->
+  path.truncate 3, (err, truncatedPath) ->
     assert.ifError(err)
     assert.equal path.readFile().toString(), 'foo'
+
+    assert.equal truncatedPath.constructor, Pathname
+    assert.equal truncatedPath.toString(), path.toString()
 
 
 ## test changes file mode

@@ -131,21 +131,18 @@ class Pathname
       mods.fs.renameSync(@path, path.toString())
       new @constructor(path.toString())
 
-  # TODO figure out "Bad file descriptor" error with fs.truncate()
-  # TODO return Pathname obj
   truncate: (len, cb) ->
     [cb, len] = extractCallback(len, cb)
 
     if cb?
-      @open 'r+', 0666, (err, fd) ->
+      @open 'r+', 0666, (err, fd) =>
         if err?
           cb(err)
         else
-          mods.fs.truncate(fd, len, cb)
-          # mods.fs.truncateSync(fd, len)
-          # cb()
+          mods.fs.truncate fd, len, (err) => cb(err, @)
     else
       mods.fs.truncateSync(@open('r+', 0666), len)
+      @
 
   chmod: (mode, cb) ->
     [cb, mode] = extractCallback(mode, cb)
