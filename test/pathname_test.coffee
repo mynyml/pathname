@@ -235,43 +235,51 @@ new Pathname(temp.path()).mkdir (err, path) ->
 
 
 ## test opens file (sync)
-# TODO test reuses fd
 with_tmpfile (path, fd) ->
   try
     mods.fs.writeFileSync(path, 'foo')
     mods.fs.closeSync(fd)
 
-    _fd = new Pathname(path).open('r', 0666)
-    buffer = new Buffer(3)
-    mods.fs.readSync(_fd, buffer, 0, 3, 0)
+    path = new Pathname(path)
+
+    _fd1 = path.open('r', 0666)
+    mods.fs.readSync(_fd1, buffer = new Buffer(3), 0, 3, 0)
     assert.equal buffer.toString(), 'foo'
 
-    _fd = new Pathname(path).open('r')
-    buffer = new Buffer(3)
-    mods.fs.readSync(_fd, buffer, 0, 3, 0)
+    _fd2 = path.open('r')
+    mods.fs.readSync(_fd2, buffer = new Buffer(3), 0, 3, 0)
     assert.equal buffer.toString(), 'foo'
+
+    assert.equal _fd1, _fd2
 
   finally
-    mods.fs.close(fd)
+    mods.fs.closeSync(_fd1)
 
 
 ## test opens file (async)
-# TODO test reuses fd
 with_tmpfile (path, fd) ->
   mods.fs.writeFileSync(path, 'foo')
   mods.fs.closeSync(fd)
 
-  new Pathname(path).open 'r', 0666, (err, _fd) ->
-    assert.ifError(err)
-    buffer = new Buffer(3)
-    mods.fs.readSync(_fd, buffer, 0, 3, 0)
-    assert.equal buffer.toString(), 'foo'
+  path = new Pathname(path)
+  _fd1 = null
+  _fd2 = null
 
-  new Pathname(path).open 'r', (err, _fd) ->
+  process.on 'exit', -> assert.equal _fd1, _fd2
+
+  path.open 'r', 0666, (err, _fd1) ->
     assert.ifError(err)
     buffer = new Buffer(3)
-    mods.fs.readSync(_fd, buffer, 0, 3, 0)
+    mods.fs.readSync(_fd1, buffer, 0, 3, 0)
     assert.equal buffer.toString(), 'foo'
+    process.on 'exit', -> mods.fs.closeSync(_fd1)
+
+  path.open 'r', (err, _fd2) ->
+    assert.ifError(err)
+    buffer = new Buffer(3)
+    mods.fs.readSync(_fd2, buffer, 0, 3, 0)
+    assert.equal buffer.toString(), 'foo'
+    process.on 'exit', -> mods.fs.closeSync(_fd2)
 
 
 ## test closes a file
