@@ -260,7 +260,7 @@ class Pathname
       @open('w+', mode); @close()
 
   # FIXME async version not so async
-  # FIXME i are teh uglie
+  # FIXME omglol i are teh uglie
   tree: (depth, cb) ->
     [cb, depth] = extractCallback(depth, cb)
 
