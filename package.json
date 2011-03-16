@@ -1,0 +1,31 @@
+{ "name" : "pathname"
+, "description" : "OOP wrapper for `fs`, `path` and `Stat` functions"
+, "keywords" : [ "path", "pathname", "OOP", "fs", "Stat" ]
+, "version" : "0.3"
+, "homepage" : "http://github.com/mynyml/pathname"
+, "author" : "Martin Aumont <mynyml@gmail.com> (http://twitter.com/mynyml)"
+, "repository" :
+  { "type" : "git"
+  , "url" : "git://github.com/mynyml/pathname.git"
+  }
+, "bugs" :
+  { "mail" : "mynyml@gmail.com"
+  , "web" : "http://github.com/mynyml/pathname/issues"
+  }
+, "directories" : { "doc" : "./doc"
+                  , "man" : "./man1"
+                  , "lib" : "./lib"
+                  , "example" : "./examples"
+                  }
+, "main" : "pathname"
+, "devDependencies" : { "underscore" : ""
+                      , "temp" : ""
+                      }
+, "engines" : { "node" : ">=0.4" }
+, "scripts" : { "test" : "" }
+, "licenses" :
+  [ { "type" : "MIT"
+    , "url" : "http://github.com/mynyml/pathname/raw/master/LICENSE"
+    }
+  ]
+}

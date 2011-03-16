@@ -3,7 +3,7 @@ Pathname
 
 Summary
 -------
-OOP wrapper for `fs`, `path` and `Stat` functions
+OOP wrapper for `fs`, `path` and `Stat` functions.
 
 Simple, clear and concise way to manipulate paths, files and directories.
 Inspired by the Ruby stdlib class of the same name.
