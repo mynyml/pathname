@@ -22,7 +22,6 @@
                       , "temp" : ""
                       }
 , "engines" : { "node" : ">=0.4" }
-, "scripts" : { "test" : "" }
 , "licenses" :
   [ { "type" : "MIT"
     , "url" : "http://github.com/mynyml/pathname/raw/master/LICENSE"
