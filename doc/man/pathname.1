@@ -1,0 +1,152 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "README" "" "March 2011" "Martin Aumont (mynyml)" "Pathname"
+.
+.SH "Summary"
+OOP wrapper for \fBfs\fR, \fBpath\fR and \fBStat\fR functions\.
+.
+.P
+Simple, clear and concise way to manipulate paths, files and directories\. Inspired by the Ruby stdlib class of the same name\.
+.
+.SH "Features"
+.
+.IP "\(bu" 4
+Unified Sync/Async API
+.
+.IP "\(bu" 4
+Direct mapping of core nodejs functions, so that API is consistent and intuitive
+.
+.IP "\(bu" 4
+Returns \fBthis\fR when possible, allowing for method chaining
+.
+.IP "\(bu" 4
+Additional convenience methods
+.
+.IP "" 0
+.
+.SH "Install"
+.
+.nf
+
+npm install pathname
+.
+.fi
+.
+.SH "Examples"
+.
+.SS "Unified Sync/Async API"
+Pathname abstracts away the \fBfuncname()\fR vs \fBfuncnameSync()\fR distiction made in core nodejs \fBfs\fR functions, and substitutes it for an intuitive equivalent; when called with a callback, the function is async \- when called without a callback, it is synchronous\.
+.
+.IP "" 4
+.
+.nf
+
+path = \'tmp/foo\.txt\' // contents: "bar"
+
+# async
+fs\.readFile(path, function(data) {
+  data // \'bar\'
+})
+new Pathname(path)\.readFile(function (data) {
+  data // \'bar\'
+})
+
+# sync
+fs\.readFileSync(path)         // \'bar\'
+new Pathname(path)\.readFile() // \'bar\'
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Notice the sync version doesn\'t end with \fBSync\fR\.
+.
+.SS "Direct Mapping"
+All functions provided by the \fBpath\fR, \fBfs\fR and \fBStat\fR modules are available on \fBPathname\fR, and they all take the exact same arguments, with the exception that initial path or file descriptor arguments are always implicit\.
+.
+.IP "" 4
+.
+.nf
+
+// path functions
+path\.basename()
+path\.dirname()
+path\.extname()
+path\.exists()
+// \.\.\.
+
+// Stat functions
+path\.isFile()
+path\.isDirectory()
+path\.isSymbolicLink()
+// \.\.\.
+
+// fs functions
+path\.readFile()
+path\.writeFile(data, encoding)
+path\.watchFile()
+path\.link(dstpath)
+path\.mkdir()
+// \.\.\.
+.
+.fi
+.
+.IP "" 0
+.
+.SS "Method Chaining"
+Methods return \fBthis\fR when no other value is expected\. In async versions, \fBthis\fR is passed as second argument when \fBerr\fR would otherwise be the only expected argument\. This behaviour allows for chaining of Pathname method calls\.
+.
+.IP "" 4
+.
+.nf
+
+# sync
+new Pathname(__dirname )\.parent()\.join(\'lib/my_module/version\')
+
+new Pathname(\'/tmp/foo\')\.parent()\.siblings()
+
+new Pathname(\'/tmp/foo\')\.mkdir()\.join(\'bar\')\.touch()\.watchFile()
+
+# async
+new Pathname(\'/tmp/foo\')\.mkdir(function(err, path) {
+  path\.join(\'bar\')\.touch(function(err, path) {
+    path\.watchFile()
+  })
+})
+.
+.fi
+.
+.IP "" 0
+.
+.SS "Additional Methods"
+Pathname also provides a few extra methods, which can be quite useful\. See inline docs \fIhttps://github\.com/mynyml/pathname/blob/master/src/pathname\.coffee\fR and examples \fIhttps://github\.com/mynyml/pathname/blob/master/examples\.coffee\fR for details\.
+.
+.IP "" 4
+.
+.nf
+
+toString(), parent(), children(), siblings(), tree(), touch(), rmR(),
+mkdirP(), traverse(), components()
+.
+.fi
+.
+.IP "" 0
+.
+.SH "Links"
+.
+.IP "\(bu" 4
+code: \fIhttp://github\.com/mynyml/pathname\fR
+.
+.IP "\(bu" 4
+docs: \fIhttp://github\.com/mynyml/pathname/blob/master/README\.md\fR
+.
+.IP "\(bu" 4
+wiki: \fIhttp://wiki\.github\.com/mynyml/pathname\fR
+.
+.IP "\(bu" 4
+bugs: \fIhttp://github\.com/mynyml/pathname/issues\fR
+.
+.IP "" 0
+

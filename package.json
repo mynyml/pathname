@@ -13,7 +13,7 @@
   , "web" : "http://github.com/mynyml/pathname/issues"
   }
 , "directories" : { "doc" : "./doc"
-                  , "man" : "./man1"
+                  , "man" : "./doc/man"
                   , "lib" : "./lib"
                   , "example" : "./examples"
                   }
