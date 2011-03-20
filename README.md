@@ -86,10 +86,9 @@ expected argument. This behaviour allows for chaining of Pathname method calls.
 
     # sync
     new Pathname(__dirname ).parent().join('lib/my_module/version')
-
     new Pathname('/tmp/foo').parent().siblings()
-
     new Pathname('/tmp/foo').mkdir().join('bar').touch().watchFile()
+    new Pathname('/tmp/foo').writeFile('bar').readFile()
 
     # async
     new Pathname('/tmp/foo').mkdir(function(err, path) {
