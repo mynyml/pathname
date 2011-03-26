@@ -4,7 +4,7 @@ mods =
   path: require('path')
   util: require('util')
 
-
+# dev utils
 global.puts    = mods.sys.puts
 global.inspect = mods.util.inspect
 global.l       = console.log
@@ -41,23 +41,12 @@ assert.include = (enumerable, value, message) ->
 
 assert.closed = (fd) ->
   assert.throws (-> mods.fs.readSync(fd, new Buffer(1), 0, 1, 0)), Error, "fd '#{fd}' is open, expected it to be closed"
-  # mods.fs.fstatSync(fd)
 
 assert.open = (fd) ->
   assert.doesNotThrow (-> mods.fs.readSync(fd, new Buffer(1), 0, 1, 0)), Error, "fd '#{fd}' is closed, expected it to be open"
 
 assert.match = (actual, expected) ->
   assert.ok expected.test(actual), "Expected #{expected} to match #{actual}"
-
-# assert.__defineGetter__ 'defered', ->
-#   proxy = {}
-#   delete @.defered
-#   for key, val of @ when val?.constructor is Function
-#     proxy[key] = (args...) ->
-#       process.on 'exit', -> val(args...)
-#   @.__defineGetter__('defered', arguments.callee)
-#   proxy
-
 
 # source: http://efreedom.com/Question/1-3561493/RegExpescape-Function-Javascript
 # author: bobince
