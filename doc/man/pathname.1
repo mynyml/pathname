@@ -4,8 +4,18 @@
 .TH "PATHNAME" "" "March 2011" "Martin Aumont (mynyml)" "Pathname"
 OOP wrapper for \fBfs\fR, \fBpath\fR and \fBStat\fR functions\. This document describes the api\. See README\.md for overview and usage\.
 .
+.SH "NOTES"
+.
+.IP "\(bu" 4
+Pathname objects are immutable\. Methods that manipulate the paths will return new path object(s)\.
+.
+.IP "\(bu" 4
+Pathname objects need not correspond to an existing file on disk
+.
+.IP "" 0
+.
 .SH "CORE NODE FUNCTIONS"
-Pathnames are immutable
+All functions provided by the \fBpath\fR, \fBfs\fR and \fBStat\fR modules are available on \fBPathname\fR, and they all take the exact same arguments, with the exception that an initial path or file descriptor argument is always implicit\.
 .
 .SH "PATHNAME\-SPECIFIC METHODS"
 Pathname also provides a few extra methods, which can be quite useful\.
@@ -38,7 +48,7 @@ new Pathname(\'/tmp/foo\')\.parent()
 .
 .IP "" 0
 .
-.SS "children()"
+.SS "children(cb)"
 All paths (files and directories) one level below \fBpath\fR in the fs tree\. \fBpath\fR must be a directory\.
 .
 .IP "" 4
@@ -54,7 +64,22 @@ new Pathname(\'/tmp\')\.children()
 .
 .IP "" 0
 .
-.SS "siblings()"
+.P
+async:
+.
+.IP "" 4
+.
+.nf
+
+new Pathname(\'/tmp\')\.children(function(paths) {
+  paths #=> [Pathname(\'/tmp/foo\'), Pathname(\'/tmp/bar\')]
+})
+.
+.fi
+.
+.IP "" 0
+.
+.SS "siblings(cb)"
 All paths (files and directories) in the same directory level as \fBpath\fR, excluding \fBpath\fR
 .
 .IP "" 4
@@ -70,7 +95,22 @@ new Pathname(\'/tmp/foo\')\.siblings()
 .
 .IP "" 0
 .
-.SS "tree()"
+.P
+async:
+.
+.IP "" 4
+.
+.nf
+
+new Pathname(\'/tmp/foo\')\.siblings(function(paths) {
+  paths #=> [Pathname(\'/tmp/bar\'), Pathname(\'/tmp/baz\')]
+})
+.
+.fi
+.
+.IP "" 0
+.
+.SS "tree(cb)"
 Entire fs tree below (and including) \fBpath\fR
 .
 .IP "" 4
@@ -86,7 +126,23 @@ new Pathname(\'/tmp\')\.tree()
 .
 .IP "" 0
 .
-.SS "touch()"
+.P
+async:
+.
+.IP "" 4
+.
+.nf
+
+new Pathname(\'/tmp\')\.tree(function(paths) {
+  paths
+  #=> [Pathname(\'/tmp\'), Pathname(\'/tmp/foo\'), Pathname(\'/tmp/bar\'), Pathname(\'/tmp/bar/baz\')]
+})
+.
+.fi
+.
+.IP "" 0
+.
+.SS "touch(mode, cb)"
 Create a file at \fBpath\fR
 .
 .IP "" 4
@@ -95,19 +151,34 @@ Create a file at \fBpath\fR
 
 path = new Pathname(\'/tmp/foo\')
 
-path\.exists()
-# false
-
-path\.touch()
-
-path\.exists() and path\.isFile()
-# true
+path\.exists()                  #=> false
+path\.touch()                   #=> path
+path\.exists() && path\.isFile() #=> true
 .
 .fi
 .
 .IP "" 0
 .
-.SS "rmR()"
+.P
+async:
+.
+.IP "" 4
+.
+.nf
+
+path = new Pathname(\'/tmp/foo\')
+path\.exists() #=> false
+
+path\.touch(function(path) {
+  path\.exists() && path\.isFile()
+  #=> true
+})
+.
+.fi
+.
+.IP "" 0
+.
+.SS "rmR(cb)"
 Recursively remove directory at \fBpath\fR and it\'s contents (whole directory tree below it)\.
 .
 .IP "" 4
@@ -119,22 +190,36 @@ path = new Pathname(\'/tmp\')
 path\.tree()
 #=> [Pathname(\'/tmp\'), Pathname(\'/tmp/foo\'), Pathname(\'/tmp/bar\'), Pathname(\'/tmp/bar/baz\')]
 
-path\.rmR()
-
-path\.tree()
-#=> [Pathname(\'/tmp\')]
-
-path\.exists()
-# false
-
-# NOTE: Pathname objects need not correspond to an existing file on the fs,
-# so it\'s correct that path\.tree() above includes the current object\.
+path\.rmR()    #=> path
+path\.tree()   #=> [Pathname(\'/tmp\')]
+path\.exists() #=> false
 .
 .fi
 .
 .IP "" 0
 .
-.SS "mkdirP()"
+.P
+async:
+.
+.IP "" 4
+.
+.nf
+
+path = new Pathname(\'/tmp\')
+
+path\.tree()
+#=> [Pathname(\'/tmp\'), Pathname(\'/tmp/foo\'), Pathname(\'/tmp/bar\'), Pathname(\'/tmp/bar/baz\')]
+
+path\.rmR(function(path) {
+  path\.tree()     #=> [Pathname(\'/tmp\')]
+  path\.exists()   #=> false
+})
+.
+.fi
+.
+.IP "" 0
+.
+.SS "mkdirP(cb)"
 Create a multilevel path
 .
 .IP "" 4
@@ -143,22 +228,37 @@ Create a multilevel path
 
 path = new Pathname(\'/tmp/foo/bar\')
 
-path\.exists()
-# false
-
-path\.parent()\.exists()
-# false
-
-path\.mkdirP()
-
-path\.exists() and path\.isDirectory()
-# true
+path\.exists()                       #=> false
+path\.parent()\.exists()              #=> false
+path\.mkdirP()                       #=> path
+path\.exists() && path\.isDirectory() #=> true
 .
 .fi
 .
 .IP "" 0
 .
-.SS "traverse()"
+.P
+async:
+.
+.IP "" 4
+.
+.nf
+
+path = new Pathname(\'/tmp/foo/bar\')
+
+path\.exists()          #=> false
+path\.parent()\.exists() #=> false
+
+path\.mkdirP(function(path) {
+  path\.exists() && path\.isDirectory()
+  #=> true
+})
+.
+.fi
+.
+.IP "" 0
+.
+.SS "traverse(cb)"
 Iterates over every component of \fBpath\fR
 .
 .IP "" 4
@@ -186,6 +286,19 @@ new Pathname(\'/tmp/foo/bar\')\.components()
 #=> [\'/\', \'tmp\', \'foo\', \'bar\']
 .
 .fi
+.
+.IP "" 0
+.
+.SH "CONTRIBUTORS"
+.
+.IP "\(bu" 4
+@mynyml
+.
+.IP "\(bu" 4
+@kenjitoy
+.
+.IP "\(bu" 4
+@fat
 .
 .IP "" 0
 

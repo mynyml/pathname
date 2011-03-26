@@ -54,7 +54,7 @@ Notice the sync version doesn't end with `Sync`.
 
 All functions provided by the `path`, `fs` and `Stat` modules are available on
 `Pathname`, and they all take the exact same arguments, with the exception that
-initial path or file descriptor arguments are always implicit.
+an initial path or file descriptor argument is always implicit.
 
     // path functions
     path.basename()
@@ -100,8 +100,8 @@ expected argument. This behaviour allows for chaining of Pathname method calls.
 
 ### Additional Methods
 
-Pathname also provides a few extra methods, which can be quite useful. See
-[inline docs][1] and [examples][2] for details.
+Pathname also provides a few extra methods, which can be quite useful. See the
+[api docs][1] or `man pathname` for details.
 
     toString(), parent(), children(), siblings(), tree(), touch(), rmR(),
     mkdirP(), traverse(), components()
@@ -109,7 +109,6 @@ Pathname also provides a few extra methods, which can be quite useful. See
 
 Links
 -----
-
 * code:  <http://github.com/mynyml/pathname>
 * docs:  <http://github.com/mynyml/pathname/blob/master/README.md>
 * wiki:  <http://wiki.github.com/mynyml/pathname>
@@ -118,6 +117,5 @@ Links
 
 
 
-[1]:  https://github.com/mynyml/pathname/blob/master/src/pathname.coffee
-[2]:  https://github.com/mynyml/pathname/blob/master/examples.coffee
+[1]:  https://github.com/mynyml/pathname/blob/master/doc/pathname.md
 
