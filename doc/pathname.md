@@ -1,16 +1,14 @@
-Pathname
+PATHNAME
 ========
-OOP wrapper for `fs`, `path` and `Stat` functions.
+OOP wrapper for `fs`, `path` and `Stat` functions. This document describes the api. See README.md for overview and usage.
 
-This document describes the api. See README.md for overview and usage.
 
-* Pathnames are immutable
-
-Core Node Functions
+CORE NODE FUNCTIONS
 -------------------
+Pathnames are immutable
 
 
-Pathname-specific Methods
+PATHNAME-SPECIFIC METHODS
 -------------------------
 Pathname also provides a few extra methods, which can be quite useful.
 
@@ -23,8 +21,8 @@ String representation of `path` object
 ### parent()
 Parent directory of `path`
 
-    new Pathname('/tmp/foo').parent().toString()
-    #=> '/tmp'
+    new Pathname('/tmp/foo').parent()
+    #=> Pathname('/tmp') #i.e. Pathname object for path '/tmp'
 
 ### children()
 All paths (files and directories) one level below `path` in the fs tree. `path`
