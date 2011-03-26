@@ -157,10 +157,3 @@ Component parts of `path`
     new Pathname('/tmp/foo/bar').components()
     #=> ['/', 'tmp', 'foo', 'bar']
 
-
-CONTRIBUTORS
-------------
-* @mynyml
-* @kenjitoy
-* @fat
-

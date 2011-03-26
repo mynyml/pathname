@@ -4,6 +4,10 @@
 , "version" : "0.8.0"
 , "homepage" : "http://github.com/mynyml/pathname"
 , "author" : "Martin Aumont <mynyml@gmail.com> (http://twitter.com/mynyml)"
+, "contributors" :
+  [ "Kenji Toyama (http://twitter.com/kenjitoy)"
+  , "Jacob Thornton (http://twitter.com/fat)"
+  ]
 , "repository" :
   { "type" : "git"
   , "url" : "git://github.com/mynyml/pathname.git"
