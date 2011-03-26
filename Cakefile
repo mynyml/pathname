@@ -5,5 +5,5 @@ shell = (cmd) ->
 
 task 'docs', "Compile man pages", (options) ->
   shell 'mkdir -p doc/man'
-  shell 'ronn --pipe --roff --date=`date +%Y-%m-%d` --manual=Pathname --organization="Martin Aumont (mynyml)" README.md > doc/man/pathname.1'
+  shell 'ronn --pipe --roff --date=`date +%Y-%m-%d` --manual=Pathname --organization="Martin Aumont (mynyml)" doc/pathname.md > doc/man/pathname.1'
 
