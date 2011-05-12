@@ -20,7 +20,11 @@ Features
 Install
 -------
 
-    npm install pathname
+    $ npm install pathname
+
+And in your app:
+
+    var Pathname = require("pathname").Pathname
 
 
 Examples
