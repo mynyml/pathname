@@ -353,5 +353,5 @@ class Pathname
         path.toString() isnt @basename().toString()
 
 
-module.exports = Pathname
+exports.Pathname = Pathname
 

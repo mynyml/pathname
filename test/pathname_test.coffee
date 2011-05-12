@@ -13,7 +13,7 @@ global.d       = (x) -> console.log("DEBUG: " + inspect x)
 _        = require('underscore')
 assert   = require('assert')
 temp     = require('temp')
-Pathname = require('../src/pathname')
+Pathname = require('../src/pathname').Pathname
 
 process._events ?= {}
 process.setMaxListeners(60)
