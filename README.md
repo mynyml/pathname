@@ -119,7 +119,12 @@ Links
 * bugs:  <http://github.com/mynyml/pathname/issues>
 
 
+Contributors
+------------
+* [fat][2]
+* Kenji Toyama
 
 
-[1]:  https://github.com/mynyml/pathname/blob/master/doc/pathname.md
+[1]: https://github.com/mynyml/pathname/blob/master/doc/pathname.md
+[2]: https://github.com/fat
 
