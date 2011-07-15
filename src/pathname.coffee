@@ -336,8 +336,15 @@ class Pathname
     elements.unshift('/') if @path[0] is '/'
     elements
 
-  children: (args...) ->
-    @readdir(args...)
+  children: (cb) ->
+    if cb?
+      mods.fs.readdir @path, (err, paths) =>
+        if err?
+          cb(err, null)
+        else
+          cb(null, paths.map (path) => @join(path))
+    else
+      mods.fs.readdirSync(@path).map (path) => @join(path)
 
   siblings: (cb) ->
     if cb?
@@ -346,11 +353,11 @@ class Pathname
           cb(err, null)
         else
           _paths = paths.filter (path) =>
-            path.toString() isnt @basename().toString()
+            path.toString() isnt @toString()
           cb(null, _paths)
     else
       @parent().children().filter (path) =>
-        path.toString() isnt @basename().toString()
+        path.toString() isnt @toString()
 
 
 exports.Pathname = Pathname

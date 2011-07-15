@@ -491,7 +491,7 @@ with_tmpfile (path) ->
   called = no
 
   path = new Pathname(path)
-  watchedPath = path.watchFile {}, (curr, prev) ->
+  watchedPath = path.watchFile {interval: 100}, (curr, prev) ->
     assert.ok curr.mtime >= prev.mtime
     called = yes
     unwatchedPath = path.unwatchFile()
@@ -501,11 +501,10 @@ with_tmpfile (path) ->
   assert.equal watchedPath.constructor, Pathname
   assert.equal watchedPath.toString(), path.toString()
 
-  path.writeFile('foo')
-  setTimeout((->
-    assert.ok called, "file listener wasn't called"
-  ), 0)
-
+  path.writeFile 'foo', (err) ->
+    setTimeout((->
+      assert.ok called, "file listener wasn't called"
+    ), 200)
 
 ## test knows path is a file
 with_tmpfile (path) ->
@@ -769,6 +768,36 @@ with_tmpdir (path) ->
     assert.include files, root.join('boo').basename()
 
 
+## test children
+with_tmpdir (path) ->
+  root = new Pathname(path)
+  root.join('bar'        ).touch()
+  root.join('boo'        ).mkdir()
+  root.join('boo/moo'    ).touch()
+
+  root.children (err, files) ->
+    assert.ifError(err)
+    assert.equal files.length, 2
+    assert.include files, root.join('bar')
+    assert.include files, root.join('boo')
+
+    files[1].children (err, files2) ->
+      assert.ifError(err)
+      assert.equal files2.length, 1
+      assert.include files2, root.join('boo/moo')
+
+
+  children = root.children()
+  assert.equal children.length, 2
+  assert.include children, root.join('bar')
+  assert.include children, root.join('boo')
+
+  children2 = children[1].children();
+  assert.equal children2.length, 1
+  assert.include children2, root.join('boo/moo')
+
+
+
 ## test creates many levels of directories
 with_tmpdir (path) ->
   root = new Pathname(path)
@@ -800,8 +829,8 @@ with_tmpdir (path) ->
   root.join('baz').mkdir()
 
   assert.equal   root.join('foo').siblings().length, 2
-  assert.include root.join('foo').siblings(), root.join('bar').basename()
-  assert.include root.join('foo').siblings(), root.join('baz').basename()
+  assert.include root.join('foo').siblings(), root.join('bar')
+  assert.include root.join('foo').siblings(), root.join('baz')
 
 with_tmpdir (path) ->
   root = new Pathname(path)
@@ -811,8 +840,8 @@ with_tmpdir (path) ->
 
   root.join('foo').siblings (err, paths) ->
     assert.equal   paths.length, 2
-    assert.include paths, root.join('bar').basename()
-    assert.include paths, root.join('baz').basename()
+    assert.include paths, root.join('bar')
+    assert.include paths, root.join('baz')
 
 
 ###
