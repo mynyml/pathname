@@ -1,4 +1,4 @@
-//"use strict";
+"use strict";
 
 var mods  = {};
 mods.fs   = require('fs');
@@ -36,15 +36,15 @@ function withTmpfile(cb) {
 }
 
 function createFile(path) {
-    var fd = mods.fs.openSync(path.toString(), 'w+', 0666);
+    var fd = mods.fs.openSync(path.toString(), 'w+', '0666');
     mods.fs.closeSync(fd);
 
     return path;
 }
 
-assert.include = function (enum, val, msg) {
-    msg = msg || "Expected "+ mods.util.inspect(enum) +" to include '"+ mods.util.inspect(val) +"'";
-    assert.ok(enum.some(function (x) { return _.isEqual(x, val); }), msg);
+assert.include = function (collection, val, msg) {
+    msg = msg || "Expected "+ mods.util.inspect(collection) +" to include '"+ mods.util.inspect(val) +"'";
+    assert.ok(collection.some(function (x) { return _.isEqual(x, val); }), msg);
 };
 
 assert.closed = function (fd) {
@@ -351,7 +351,7 @@ withTmpfile(function (path, fd) {
 
         var path = new Pathname(path);
 
-        var _fd1 = path.open('r', 0666);
+        var _fd1 = path.open('r', '0666');
         mods.fs.readSync(_fd1, buffer = new Buffer(3), 0, 3, 0);
         assert.equal(buffer.toString(), 'foo');
 
@@ -379,7 +379,7 @@ withTmpfile(function (path, fd) {
         assert.equal(_fd1, _fd2);
     });
 
-    path.open('r', 0666, function (err, _fd1) {
+    path.open('r', '0666', function (err, _fd1) {
         assert.ifError(err);
         var buffer = new Buffer(3);
         mods.fs.readSync(_fd1, buffer, 0, 3, 0);
@@ -505,11 +505,11 @@ withTmpfile(function (path) {
 // test changes file mode
 withTmpdir(function (dir) {
     var path = new Pathname(dir).join('foo');
-    path.open('w+', 0644, function (err, fd) {
+    path.open('w+', '0644', function (err, fd) {
         var chmodedPath;
 
         assert.equal(path.stat().mode.toString(8), '100644');
-        chmodedPath = path.chmod(0622);
+        chmodedPath = path.chmod('0622');
         assert.equal(path.stat().mode.toString(8), '100622');
 
         assert.equal(chmodedPath.constructor, Pathname);
@@ -519,9 +519,9 @@ withTmpdir(function (dir) {
 
 withTmpdir(function (dir) {
     var path = new Pathname(dir).join('bar');
-    path.open('w+', 0644, function (err, fd) {
+    path.open('w+', '0644', function (err, fd) {
         assert.equal(path.stat().mode.toString(8), '100644');
-        path.chmod(0622, function (err, chmodedPath) {
+        path.chmod('0622', function (err, chmodedPath) {
             assert.ifError(err);
             assert.equal(path.stat().mode.toString(8), '100622');
 
@@ -709,7 +709,7 @@ new Pathname(temp.path()).touch(function (err, path) {
 
 process.nextTick(function () {
     try {
-        var path = new Pathname(temp.path()).touch(0744);
+        var path = new Pathname(temp.path()).touch('0744');
         assert.equal(path.stat().mode.toString(8), '100744');
     } finally {
         if (val(path)) {
