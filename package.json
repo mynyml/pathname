@@ -1,7 +1,7 @@
 { "name" : "pathname"
 , "description" : "OOP wrapper for `fs`, `path` and `Stat` functions"
 , "keywords" : [ "path", "pathname", "OOP", "fs", "Stat" ]
-, "version" : "0.8.3"
+, "version" : "0.9.0"
 , "homepage" : "http://github.com/mynyml/pathname"
 , "author" : "Martin Aumont <mynyml@gmail.com> (http://twitter.com/mynyml)"
 , "contributors" :
