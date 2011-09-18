@@ -22,8 +22,9 @@
                   , "example" : "./examples"
                   }
 , "main" : "lib/pathname"
-, "devDependencies" : { "underscore" : ""
-                      , "temp" : ""
+, "devDependencies" : { "underscore" : "1.1.7"
+                      , "temp" : "0.2.0"
+                      , "vows" : "0.5.11"
                       }
 , "engines" : { "node" : "0.4" }
 , "licenses" :
