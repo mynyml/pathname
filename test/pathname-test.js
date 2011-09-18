@@ -1,3 +1,5 @@
+//"use strict";
+
 var mods  = {};
 mods.fs   = require('fs');
 mods.sys  = require('sys');
@@ -31,6 +33,13 @@ function withTmpfile(cb) {
         assert.ifError(err);
         cb(info.path, info.fd);
     });
+}
+
+function createFile(path) {
+    var fd = mods.fs.openSync(path.toString(), 'w+', 0666);
+    mods.fs.closeSync(fd);
+
+    return path;
 }
 
 assert.include = function (enum, val, msg) {
@@ -82,7 +91,7 @@ assert.equal(new Pathname('/tmp/foo/bar/../').toString(), '/tmp/foo');
 
 
 // test joining paths
-assert.equal(new Pathname('/tmp/foo' ).join('bar' ).constructor, Pathname);
+//assert.equal(new Pathname('/tmp/foo' ).join('bar' ).constructor, Pathname);
 assert.equal(new Pathname('/tmp/foo' ).join('bar' ).toString(),  '/tmp/foo/bar');
 assert.equal(new Pathname('/tmp/foo' ).join('bar/').toString(),  '/tmp/foo/bar');
 assert.equal(new Pathname('/tmp/foo' ).join('/bar').toString(),  '/tmp/foo/bar');
@@ -102,7 +111,7 @@ assert.equal(new Pathname('/tmp/foo'    ).basename().toString(), 'foo');
 assert.equal(new Pathname('/tmp/foo.ext').basename().toString(), 'foo.ext');
 
 
-// testextracts extention
+// test extracts extention
 assert.equal(new Pathname('/tmp/foo'        ).extname(), '');
 assert.equal(new Pathname('/tmp/foo.ext'    ).extname(), '.ext');
 assert.equal(new Pathname('/tmp/foo.txt.ext').extname(), '.ext');
@@ -148,12 +157,85 @@ withTmpdir(function (path) {
 });
 
 
+// test knows path is a file
+withTmpfile(function (path) {
+    assert.ok(new Pathname(path).isFile());
+});
+withTmpdir(function (path) {
+    assert.ok(! new Pathname(path).isFile());
+});
+assert.ok(! new Pathname(temp.path()).isFile());
+
+withTmpfile(function (path) {
+    new Pathname(path).isFile(function (err, isFile) {
+        assert.ifError(err);
+        assert.ok(isFile);
+    });
+});
+
+withTmpdir(function (path) {
+    new Pathname(path).isFile(function (err, isFile) {
+        assert.ifError(err);
+        assert.ok(! isFile);
+    });
+});
+
+new Pathname(temp.path()).isFile(function (err, isFile) {
+    assert.ifError(err);
+    assert.ok(! isFile);
+});
+
+
+// test knows path is a dir
+withTmpdir(function (path) {
+    assert.ok(new Pathname(path).isDirectory());
+});
+withTmpfile(function (path) {
+    assert.ok(! new Pathname(path).isDirectory());
+});
+assert.ok(! new Pathname(temp.path()).isDirectory());
+
+withTmpdir(function (path) {
+    new Pathname(path).isDirectory(function (err, isDirectory) {
+        assert.ifError(err);
+        assert.ok(isDirectory);
+    });
+});
+
+withTmpfile(function (path) {
+    new Pathname(path).isDirectory(function (err, isDirectory) {
+        assert.ifError(err);
+        assert.ok(! isDirectory);
+    });
+});
+
+new Pathname(temp.path()).isDirectory(function (err, isDirectory) {
+    assert.ifError(err);
+    assert.ok(! isDirectory);
+});
+
+
+// test knows path is a symlink
+withTmpdir(function (dir) {
+    var path1 = new Pathname(dir).join('foo');
+    var path2 = new Pathname(dir).join('bar');
+
+    createFile(path2);
+    mods.fs.symlinkSync(path2.toString(), path1.toString());
+
+    assert.ok(  path1.isFile());
+    assert.ok(  path2.isFile());
+    assert.ok(  path1.isSymbolicLink());
+    assert.ok(! path2.isSymbolicLink());
+});
+
+
 // test expands path
 withTmpdir(function (path) {
     var root = new Pathname(path);
     var cwd  = process.cwd();
 
-    root.join('foo').touch();
+    createFile(root.join('foo'));
     try {
         process.chdir(path);
         assert.equal(new Pathname('foo').realpath().constructor, Pathname);
@@ -359,7 +441,7 @@ withTmpdir(function (dir) {
 // test renames a path
 withTmpdir(function (path) {
     var path = new Pathname(path);
-    var curr = path.join('foo').touch();
+    var curr = path.join('foo'); createFile(curr);
     var next = path.join('bar');
 
     assert.ok(curr.isFile());
@@ -376,7 +458,7 @@ withTmpdir(function (path) {
 
 withTmpdir(function (path) {
     var path = new Pathname(path);
-    var curr = path.join('foo').touch();
+    var curr = path.join('foo'); createFile(curr);
     var next = path.join('bar');
 
     assert.ok(curr.isFile());
@@ -398,11 +480,10 @@ withTmpfile(function (path) {
     var path = new Pathname(path);
     var truncatedPath;
 
-    path.writeFile('foobar');
+    mods.fs.writeFileSync(path.toString(), 'foobar');
     truncatedPath = path.truncate(3);
 
-    assert.equal(path.readFile().toString(), 'foo');
-
+    assert.equal(mods.fs.readFileSync(path.toString()), 'foo');
     assert.equal(truncatedPath.constructor, Pathname);
     assert.equal(truncatedPath.toString(), path.toString());
 });
@@ -410,10 +491,10 @@ withTmpfile(function (path) {
 withTmpfile(function (path) {
     var path = new Pathname(path);
 
-    path.writeFile('foobar');
+    mods.fs.writeFileSync(path.toString(), 'foobar');
     path.truncate(3, function (err, truncatedPath) {
         assert.ifError(err);
-        assert.equal(path.readFile().toString(), 'foo');
+        assert.equal(mods.fs.readFileSync(path.toString()), 'foo');
 
         assert.equal(truncatedPath.constructor, Pathname);
         assert.equal(truncatedPath.toString(), path.toString());
@@ -481,6 +562,7 @@ withTmpfile(function (path) {
     assert.equal(writtenPath.constructor, Pathname);
     assert.equal(writtenPath.toString(), path.toString());
 });
+
 withTmpfile(function (path) {
     var path = new Pathname(path);
 
@@ -496,7 +578,9 @@ withTmpfile(function (path) {
 // test creates hard link
 withTmpdir(function (path) {
     var path1 = new Pathname(path).join('foo');
-    var path2 = new Pathname(path).join('bar').touch().link(path1);
+    var path2 = new Pathname(path).join('bar'); createFile(path2);
+
+    path2.link(path1);
 
     path2.writeFile('data');
     assert.equal(path1.readFile(), 'data');
@@ -507,7 +591,9 @@ withTmpdir(function (path) {
 
 withTmpdir(function (path) {
     var path1 = new Pathname(path).join('foo');
-    new Pathname(path).join('bar').touch().link(path1, function (err, path2) {
+    var path2 = new Pathname(path).join('bar'); createFile(path2);
+
+    path2.link(path1, function (err, path2) {
         assert.ifError(err);
 
         path2.writeFile('data');
@@ -522,7 +608,9 @@ withTmpdir(function (path) {
 // test creates symlink
 withTmpdir(function (path) {
     var path1 = new Pathname(path).join('foo');
-    var path2 = new Pathname(path).join('bar').touch().symlink(path1);
+    var path2 = new Pathname(path).join('bar'); createFile(path2);
+
+    path2.symlink(path1);
 
     path2.writeFile('data');
     assert.equal(path1.readFile(), 'data');
@@ -533,7 +621,9 @@ withTmpdir(function (path) {
 
 withTmpdir(function (path) {
     var path1 = new Pathname(path).join('foo');
-    new Pathname(path).join('bar').touch().symlink(path1, function (err, path2) {
+    var path2 = new Pathname(path).join('bar'); createFile(path2);
+
+    path2.symlink(path1, function (err, path2) {
         assert.ifError(err);
 
         path2.writeFile('data');
@@ -548,7 +638,9 @@ withTmpdir(function (path) {
 // test reads symlink path
 withTmpdir(function (path) {
     var path1 = new Pathname(path).join('foo');
-    var path2 = new Pathname(path).join('bar').touch().symlink(path1);
+    var path2 = new Pathname(path).join('bar'); createFile(path2);
+
+    path2.symlink(path1);
 
     assert.equal(path1.readlink().constructor, Pathname);
     assert.equal(path1.readlink().toString(), path2.toString());
@@ -556,7 +648,9 @@ withTmpdir(function (path) {
 
 withTmpdir(function (path) {
     var path1 = new Pathname(path).join('foo');
-    var path2 = new Pathname(path).join('bar').touch().symlink(path1);
+    var path2 = new Pathname(path).join('bar'); createFile(path2);
+
+    path2.symlink(path1);
 
     path1.readlink(function (err, resolvedPath) {
         assert.equal(resolvedPath.constructor, Pathname);
@@ -581,76 +675,6 @@ withTmpfile(function (path) {
 
     path.writeFile('foo');
     setTimeout(function () { assert.ok(called, "file listener wasn't called"); }, 0);
-});
-
-
-// test knows path is a file
-withTmpfile(function (path) {
-    assert.ok(new Pathname(path).isFile());
-});
-withTmpdir(function (path) {
-    assert.ok(! new Pathname(path).isFile());
-});
-assert.ok(! new Pathname(temp.path()).isFile());
-
-withTmpfile(function (path) {
-    new Pathname(path).isFile(function (err, isFile) {
-        assert.ifError(err);
-        assert.ok(isFile);
-    });
-});
-
-withTmpdir(function (path) {
-    new Pathname(path).isFile(function (err, isFile) {
-        assert.ifError(err);
-        assert.ok(! isFile);
-    });
-});
-
-new Pathname(temp.path()).isFile(function (err, isFile) {
-    assert.ifError(err);
-    assert.ok(! isFile);
-});
-
-
-// test knows path is a dir
-withTmpdir(function (path) {
-    assert.ok(new Pathname(path).isDirectory());
-});
-withTmpfile(function (path) {
-    assert.ok(! new Pathname(path).isDirectory());
-});
-assert.ok(! new Pathname(temp.path()).isDirectory());
-
-withTmpdir(function (path) {
-    new Pathname(path).isDirectory(function (err, isDirectory) {
-        assert.ifError(err);
-        assert.ok(isDirectory);
-    });
-});
-
-withTmpfile(function (path) {
-    new Pathname(path).isDirectory(function (err, isDirectory) {
-        assert.ifError(err);
-        assert.ok(! isDirectory);
-    });
-});
-
-new Pathname(temp.path()).isDirectory(function (err, isDirectory) {
-    assert.ifError(err);
-    assert.ok(! isDirectory);
-});
-
-
-// test knows path is a symlink
-withTmpdir(function (dir) {
-    var path1 = new Pathname(dir).join('foo');
-    var path2 = new Pathname(dir).join('bar').touch().symlink(path1);
-
-    assert.ok(  path1.isFile());
-    assert.ok(  path2.isFile());
-    assert.ok(  path1.isSymbolicLink());
-    assert.ok(! path2.isSymbolicLink());
 });
 
 
@@ -833,7 +857,7 @@ withTmpdir(function (path) {
             root.join('boo'        ).rmdir();
             root.join('baz'        ).unlink();
             root.join('bar'        ).unlink();
-            root.mkdir();
+            root.rmdir();
         }
     }
 });
