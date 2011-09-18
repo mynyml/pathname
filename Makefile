@@ -1,5 +1,5 @@
 
-.PHONY: all test docs install
+.PHONY: all test docs install publish
 
 all : test
 
