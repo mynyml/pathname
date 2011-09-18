@@ -19,12 +19,15 @@ Features
 
 Install
 -------
-
-    $ npm install pathname
+```sh
+$ npm install pathname
+```
 
 And in your app:
 
-    var Pathname = require("pathname").Pathname
+```javascript
+var Pathname = require("pathname").Pathname;
+```
 
 
 Examples
@@ -37,19 +40,21 @@ core nodejs `fs` functions, and substitutes it for an intuitive equivalent;
 when called with a callback, the function is async - when called without a
 callback, it is synchronous.
 
-    path = 'tmp/foo.txt' // contents: "bar"
+```javascript
+var path = 'tmp/foo.txt'; // contents: "bar"
 
-    # async
-    fs.readFile(path, function(data) {
-      data // 'bar'
-    })
-    new Pathname(path).readFile(function (data) {
-      data // 'bar'
-    })
+// async
+fs.readFile(path, function(data) {
+    data; // 'bar'
+});
+new Pathname(path).readFile(function (data) {
+    data; // 'bar'
+});
 
-    # sync
-    fs.readFileSync(path)         // 'bar'
-    new Pathname(path).readFile() // 'bar'
+// sync
+fs.readFileSync(path);         // 'bar'
+new Pathname(path).readFile(); // 'bar'
+```
 
 Notice the sync version doesn't end with `Sync`.
 
@@ -60,26 +65,28 @@ All functions provided by the `path`, `fs` and `Stat` modules are available on
 `Pathname`, and they all take the exact same arguments, with the exception that
 an initial path or file descriptor argument is always implicit.
 
-    // path functions
-    path.basename()
-    path.dirname()
-    path.extname()
-    path.exists()
-    // ...
+```javascript
+// path functions
+path.basename()
+path.dirname()
+path.extname()
+path.exists()
+// ...
 
-    // Stat functions
-    path.isFile()
-    path.isDirectory()
-    path.isSymbolicLink()
-    // ...
+// Stat functions
+path.isFile()
+path.isDirectory()
+path.isSymbolicLink()
+// ...
 
-    // fs functions
-    path.readFile()
-    path.writeFile(data, encoding)
-    path.watchFile()
-    path.link(dstpath)
-    path.mkdir()
-    // ...
+// fs functions
+path.readFile()
+path.writeFile(data, encoding)
+path.watchFile()
+path.link(dstpath)
+path.mkdir()
+// ...
+```
     
 
 ### Method Chaining
@@ -88,27 +95,29 @@ Methods return `this` when no other value is expected. In async versions,
 `this` is passed as second argument when `err` would otherwise be the only
 expected argument. This behaviour allows for chaining of Pathname method calls.
 
-    # sync
-    new Pathname(__dirname ).parent().join('lib/my_module/version')
-    new Pathname('/tmp/foo').parent().siblings()
-    new Pathname('/tmp/foo').mkdir().join('bar').touch().watchFile()
-    new Pathname('/tmp/foo').writeFile('bar').readFile()
+```javascript
+// sync
+new Pathname(__dirname ).parent().join('lib/my_module/version');
+new Pathname('/tmp/foo').parent().siblings();
+new Pathname('/tmp/foo').mkdir().join('bar').touch().watchFile();
+new Pathname('/tmp/foo').writeFile('bar').readFile();
 
-    # async
-    new Pathname('/tmp/foo').mkdir(function(err, path) {
-      path.join('bar').touch(function(err, path) {
-        path.watchFile()
-      })
-    })
-
+// async
+new Pathname('/tmp/foo').mkdir(function(err, path) {
+    path.join('bar').touch(function(err, path) {
+        path.watchFile();
+    });
+});
+```
 
 ### Additional Methods
 
-Pathname also provides a few extra methods, which can be quite useful. See the
+Pathname also provides a few extra methods, which can be quite useful. Especially interesting is the `tree()` function, which allows walking a directory tree recursively. See the
 [api docs][1] or `man pathname` for details.
 
-    toString(), parent(), children(), siblings(), tree(), touch(), rmR(),
-    mkdirP(), traverse(), components()
+```javascript
+toString(), parent(), children(), siblings(), tree(), touch(), rmR(), mkdirP(), traverse(), components()
+```
 
 
 Links
