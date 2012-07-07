@@ -82,17 +82,17 @@ Create a file at `path`
 
     path = new Pathname('/tmp/foo')
 
-    path.exists()                  #=> false
+    fs.exists()                  #=> false
     path.touch()                   #=> path
-    path.exists() && path.isFile() #=> true
+    fs.exists() && path.isFile() #=> true
 
 async:
 
     path = new Pathname('/tmp/foo')
-    path.exists() #=> false
+    fs.exists() #=> false
 
     path.touch(function(path) {
-      path.exists() && path.isFile()
+      fs.exists() && path.isFile()
       #=> true
     })
 
@@ -106,7 +106,7 @@ Recursively remove directory at `path` and it's contents (whole directory tree b
 
     path.rmR()    #=> path
     path.tree()   #=> [Pathname('/tmp')]
-    path.exists() #=> false
+    fs.exists() #=> false
 
 async:
 
@@ -117,7 +117,7 @@ async:
 
     path.rmR(function(path) {
       path.tree()     #=> [Pathname('/tmp')]
-      path.exists()   #=> false
+      fs.exists()   #=> false
     })
 
 ### mkdirP(cb)
@@ -125,20 +125,20 @@ Create a multilevel path
 
     path = new Pathname('/tmp/foo/bar')
 
-    path.exists()                       #=> false
+    fs.exists()                       #=> false
     path.parent().exists()              #=> false
     path.mkdirP()                       #=> path
-    path.exists() && path.isDirectory() #=> true
+    fs.exists() && path.isDirectory() #=> true
 
 async:
 
     path = new Pathname('/tmp/foo/bar')
 
-    path.exists()          #=> false
+    fs.exists()          #=> false
     path.parent().exists() #=> false
 
     path.mkdirP(function(path) {
-      path.exists() && path.isDirectory()
+      fs.exists() && path.isDirectory()
       #=> true
     })
 

@@ -70,7 +70,7 @@ an initial path or file descriptor argument is always implicit.
 path.basename()
 path.dirname()
 path.extname()
-path.exists()
+fs.exists()
 // ...
 
 // Stat functions
